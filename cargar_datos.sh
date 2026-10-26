@@ -2,7 +2,7 @@
 set -e
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-SQL_FILE="${DIR}/cargar_500_datos.sql"
+SQL_FILE="${DIR}/cargar_datos.sql"
 
 # Si se pasa un argumento, permite especificar otro archivo .sql (ej: ./cargar_datos.sh Hobbies.sql)
 if [ -n "$1" ]; then

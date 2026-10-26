@@ -1,14 +1,61 @@
 #!/usr/bin/env python3
+"""
+Generador del dataset de prueba para el cluster CockroachDB (base 'hobbies').
+
+Crea los CSV de datos_csv/ y el script cargar_datos.sql con una
+distribucion equilibrada:
+
+  - Cada estudiante tiene VARIOS hobbies y VARIAS realizaciones.
+  - Cada hobby y cada recompensa se usa casi el mismo numero de veces
+    (ninguno queda sin usar; la diferencia entre el mas y el menos usado
+    es de solo 1-2 unidades).
+  - Toda realizacion referencia un par (estudiante, hobby) que existe en
+    ESTUDIANTE_HOBBY: la integridad referencial se garantiza por
+    construccion y se verifica antes de escribir los archivos.
+
+Para cambiar cantidades, rangos o fechas edita CONFIG y ejecuta:
+    python generate_dataset.py
+La guia completa esta en README.md, seccion 10.
+"""
 import csv
 import os
 import random
+from collections import Counter
 from datetime import date, timedelta
 
-random.seed(42)
+# ----------------------------------------------------------------
+# CONFIGURACION: edita estos valores para alterar el dataset.
+# Ver README.md seccion 10 para ejemplos concretos.
+# ----------------------------------------------------------------
+CONFIG = {
+    # Misma semilla => exactamente los mismos datos (reproducible).
+    "semilla": 42,
+
+    # Tamanos de las tablas principales.
+    "num_estudiantes": 500,
+    "num_hobbies": 250,
+    "num_recompensas": 250,
+
+    # Hobbies y realizaciones POR ESTUDIANTE (minimo, maximo).
+    # El total de filas de ESTUDIANTE_HOBBY y REALIZACION_HOBBY es la
+    # suma de lo que salga por estudiante (~2000 con estos rangos).
+    "hobbies_por_estudiante": (2, 6),
+    "realizaciones_por_estudiante": (2, 6),
+
+    # Rango de fechas de REALIZACION_HOBBY y rangos de edad/valor.
+    "fecha_inicio": date(2026, 1, 1),
+    "fecha_fin": date(2026, 10, 24),
+    "edad_min": 18,
+    "edad_max": 32,
+    "valor_min": 10,
+    "valor_max": 500,
+}
+
+random.seed(CONFIG["semilla"])
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CSV_DIR = os.path.join(BASE_DIR, "datos_csv")
-SQL_FILE = os.path.join(BASE_DIR, "cargar_500_datos.sql")
+SQL_FILE = os.path.join(BASE_DIR, "cargar_datos.sql")
 
 os.makedirs(CSV_DIR, exist_ok=True)
 
@@ -33,26 +80,8 @@ apellidos = [
     "Restrepo", "Ospina"
 ]
 
-# 1. Generar 500 Estudiantes
-estudiantes = []
-for i in range(1, 501):
-    nom = nombres[(i - 1) % len(nombres)]
-    ape1 = apellidos[((i - 1) // len(nombres)) % len(apellidos)]
-    ape2 = apellidos[(i * 3) % len(apellidos)]
-    nombre_completo = f"{nom} {ape1} {ape2}"
-    edad = 18 + ((i * 7) % 15)  # Edades entre 18 y 32
-    # correo normalizado sin tildes ni espacios
-    clean_nom = nom.lower().replace(" ", "")
-    clean_ape = ape1.lower().replace(" ", "")
-    correo = f"{clean_nom}.{clean_ape}{i}@universidad.edu.co"
-    estudiantes.append({
-        "id": i,
-        "nombre": nombre_completo,
-        "edad": edad,
-        "correo_electronico": correo
-    })
-
-# 2. Generar 500 Hobbies
+# Actividades y modalidades: los hobbies se generan combinando ambas
+# listas (50 x 10 = 500 combinaciones posibles) hasta llenar num_hobbies.
 actividades = [
     "Futbol", "Baloncesto", "Voleibol", "Natacion", "Ajedrez", "Ciclismo", "Senderismo",
     "Atletismo", "Tenis de campo", "Tenis de mesa", "Pintura al oleo", "Acuarela",
@@ -60,110 +89,176 @@ actividades = [
     "Guitarra acustica", "Guitarra electrica", "Piano", "Bateria", "Bajo electrico",
     "Canto coral", "Produccion musical", "Lectura de ciencia ficcion", "Lectura de historia",
     "Escritura creativa", "Poesia", "Programacion en Python", "Desarrollo web",
-    "Robótica educativa", "Modelado 3D", "Animacion digital", "Videojuegos de estrategia",
+    "Robotica educativa", "Modelado 3D", "Animacion digital", "Videojuegos de estrategia",
     "Videojuegos de rol", "Juegos de mesa", "Cocina italiana", "Reposteria artesanal",
     "Cocteleria sin alcohol", "Barismo y cafe", "Jardineria urbana", "Bonsai", "Yoga",
     "Meditacion guiada", "Calistenia", "Crossfit", "Artes marciales", "Teatro callejero",
     "Danza contemporanea", "Salsa y bachata", "Origami y papiroflexia"
 ]
 
-niveles_ambientes = [
+modalidades = [
     "Nivel Principiante", "Nivel Intermedio", "Nivel Avanzado", "En Grupo", "Al Aire Libre",
-    "En Laboratorio", "Taller Intensivo", "Modalidad Nocturna", "De Fin de Semana", "Club Competitivo"
+    "En Laboratorio", "Taller Intensivo", "Modalidad Nocturna", "De Fin de Semana",
+    "Club Competitivo"
 ]
 
-hobbies = []
-h_id = 1
-for act in actividades:
-    for mod in niveles_ambientes:
-        hobbies.append({
-            "id": h_id,
-            "nombre": f"{act} ({mod})"
-        })
-        h_id += 1
-        if h_id > 500:
-            break
-    if h_id > 500:
-        break
-
-# 3. Generar 500 Recompensas
 tipos_recompensa = [
     "Bono Cafeteria", "Descuento Libreria", "Puntos Bienestar", "Insignia Deportiva",
     "Acceso Gimnasio", "Bono Almuerzo", "Kit Papeleria", "Entrada Cine Cultural",
     "Certificado Excelencia", "Bono Tienda Universitaria"
 ]
 
+# ----------------------------------------------------------------
+# Helpers de reparto equilibrado
+# ----------------------------------------------------------------
+
+def repartir_sin_repetidos(ids, necesidades):
+    """Reparte unidades de `ids` entre sujetos de forma balanceada.
+
+    necesidades: lista de (sujeto, cantidad). En cada eleccion solo se
+    consideran los ids menos usados hasta ese momento (con desempate
+    aleatorio), asi cada id termina usado casi el mismo numero de veces
+    (diferencia maxima de 1-2 usos) y un sujeto nunca recibe repetidos.
+    """
+    ids = list(ids)
+    uso = {i: 0 for i in ids}
+    resultado = {}
+    for sujeto, cantidad in necesidades:
+        cantidad = min(cantidad, len(ids))
+        ordenados = sorted(ids, key=lambda i: (uso[i], random.random()))
+        elegidos = set(ordenados[:cantidad])
+        for i in elegidos:
+            uso[i] += 1
+        resultado[sujeto] = elegidos
+    return resultado
+
+
+def repartidor_ciclico(ids):
+    """Iterador infinito que entrega los ids barajados en pasadas completas.
+
+    Con N entregas cada id se usa N/len(ids) veces exactas: balance
+    perfecto para columnas que si admiten repeticion.
+    """
+    while True:
+        pool = list(ids)
+        random.shuffle(pool)
+        for valor in pool:
+            yield valor
+
+
+# ----------------------------------------------------------------
+# 1. Estudiantes
+# ----------------------------------------------------------------
+estudiantes = []
+for i in range(1, CONFIG["num_estudiantes"] + 1):
+    nom = nombres[(i - 1) % len(nombres)]
+    ape1 = apellidos[((i - 1) // len(nombres)) % len(apellidos)]
+    ape2 = apellidos[(i * 3) % len(apellidos)]
+    edad = random.randint(CONFIG["edad_min"], CONFIG["edad_max"])
+    # correo normalizado sin tildes ni espacios; el id lo hace unico
+    correo = f"{nom.lower()}.{ape1.lower()}{i}@universidad.edu.co"
+    estudiantes.append({
+        "id": i,
+        "nombre": f"{nom} {ape1} {ape2}",
+        "edad": edad,
+        "correo_electronico": correo
+    })
+
+# ----------------------------------------------------------------
+# 2. Hobbies (actividad x modalidad, rotando ambas listas)
+# ----------------------------------------------------------------
+hobbies = []
+combo = 0
+while len(hobbies) < CONFIG["num_hobbies"]:
+    act = actividades[combo % len(actividades)]
+    mod = modalidades[(combo // len(actividades)) % len(modalidades)]
+    hobbies.append({"id": len(hobbies) + 1, "nombre": f"{act} ({mod})"})
+    combo += 1
+
+# ----------------------------------------------------------------
+# 3. Recompensas (tipo x nivel, rotando la lista de tipos)
+# ----------------------------------------------------------------
 recompensas = []
-for i in range(1, 501):
+for i in range(1, CONFIG["num_recompensas"] + 1):
     tipo = tipos_recompensa[(i - 1) % len(tipos_recompensa)]
     nivel = ((i - 1) // len(tipos_recompensa)) + 1
-    nombre_rec = f"{tipo} - Nivel {nivel}"
-    valor = 10 + ((i * 13) % 491)  # Valores entre 10 y 500
     recompensas.append({
         "id": i,
-        "nombre": nombre_rec,
-        "valor": valor
+        "nombre": f"{tipo} - Nivel {nivel}",
+        "valor": random.randint(CONFIG["valor_min"], CONFIG["valor_max"])
     })
 
-# 4. Generar 500 Estudiante_Hobby
-# Cada estudiante del 1 al 500 con un hobby asignado (todos los pares son unicos)
+# ----------------------------------------------------------------
+# 4. Estudiante_Hobby: varios hobbies por estudiante, balanceado
+# ----------------------------------------------------------------
+h_min, h_max = CONFIG["hobbies_por_estudiante"]
+necesidades_h = [(e["id"], random.randint(h_min, h_max)) for e in estudiantes]
+hobbies_de = repartir_sin_repetidos([h["id"] for h in hobbies], necesidades_h)
+
 estudiante_hobbies = []
-for i in range(1, 501):
-    # Asignar a estudiante i un hobby h
-    # Hobby variado
-    h_idx = ((i * 17) % 500) + 1
-    estudiante_hobbies.append({
-        "estudiante_id": i,
-        "hobby_id": h_idx
-    })
+for e in estudiantes:
+    for h_id in sorted(hobbies_de[e["id"]]):
+        estudiante_hobbies.append({
+            "estudiante_id": e["id"],
+            "hobby_id": h_id
+        })
 
-# 5. Generar 500 Realizaciones de Hobbies
-# Cada realizacion usa un par valido de (estudiante_id, hobby_id)
-# Fecha entre 2026-01-01 y 2026-10-15
-fecha_inicio = date(2026, 1, 1)
-total_dias = (date(2026, 10, 15) - fecha_inicio).days
+# ----------------------------------------------------------------
+# 5. Realizacion_Hobby: varias realizaciones por estudiante
+#    Cada una usa un par (estudiante, hobby) que si existe.
+# ----------------------------------------------------------------
+r_min, r_max = CONFIG["realizaciones_por_estudiante"]
+fecha_inicio = CONFIG["fecha_inicio"]
+total_dias = (CONFIG["fecha_fin"] - fecha_inicio).days
+siguiente_recompensa = repartidor_ciclico([r["id"] for r in recompensas])
 
-realizaciones = []
-for i in range(1, 501):
-    par = estudiante_hobbies[i - 1]
-    recompensa_id = ((i * 23) % 500) + 1
-    offset_dias = (i * 7) % total_dias
-    fecha_realizacion = fecha_inicio + timedelta(days=offset_dias)
-    realizaciones.append({
-        "id": i,
-        "estudiante_id": par["estudiante_id"],
-        "hobby_id": par["hobby_id"],
-        "recompensa_id": recompensa_id,
-        "fecha": fecha_realizacion.strftime("%Y-%m-%d")
-    })
+filas = []
+for e in estudiantes:
+    mis_hobbies = sorted(hobbies_de[e["id"]])
+    for _ in range(random.randint(r_min, r_max)):
+        filas.append({
+            "estudiante_id": e["id"],
+            "hobby_id": random.choice(mis_hobbies),
+            "recompensa_id": next(siguiente_recompensa),
+            "fecha": (fecha_inicio + timedelta(days=random.randint(0, total_dias))).strftime("%Y-%m-%d")
+        })
+
+# Se barajan y luego se numeran para que los IDs no queden agrupados
+# por estudiante ni por fecha.
+random.shuffle(filas)
+realizaciones = [{"id": i, **f} for i, f in enumerate(filas, start=1)]
+
+# ----------------------------------------------------------------
+# Verificacion de integridad antes de escribir nada
+# ----------------------------------------------------------------
+pares = {(p["estudiante_id"], p["hobby_id"]) for p in estudiante_hobbies}
+assert len(estudiante_hobbies) == len(pares), "Pares duplicados en ESTUDIANTE_HOBBY"
+assert all((r["estudiante_id"], r["hobby_id"]) in pares for r in realizaciones), \
+    "Realizacion con par (estudiante, hobby) inexistente"
+assert len({r["id"] for r in realizaciones}) == len(realizaciones), "IDs duplicados"
 
 # ----------------- ESCRIBIR CSVs -----------------
 
-# Estudiante CSV
 with open(os.path.join(CSV_DIR, "estudiante.csv"), "w", newline="", encoding="utf-8") as f:
     writer = csv.DictWriter(f, fieldnames=["id", "nombre", "edad", "correo_electronico"])
     writer.writeheader()
     writer.writerows(estudiantes)
 
-# Hobby CSV
 with open(os.path.join(CSV_DIR, "hobby.csv"), "w", newline="", encoding="utf-8") as f:
     writer = csv.DictWriter(f, fieldnames=["id", "nombre"])
     writer.writeheader()
     writer.writerows(hobbies)
 
-# Recompensa CSV
 with open(os.path.join(CSV_DIR, "recompensa.csv"), "w", newline="", encoding="utf-8") as f:
     writer = csv.DictWriter(f, fieldnames=["id", "nombre", "valor"])
     writer.writeheader()
     writer.writerows(recompensas)
 
-# Estudiante_Hobby CSV
 with open(os.path.join(CSV_DIR, "estudiante_hobby.csv"), "w", newline="", encoding="utf-8") as f:
     writer = csv.DictWriter(f, fieldnames=["estudiante_id", "hobby_id"])
     writer.writeheader()
     writer.writerows(estudiante_hobbies)
 
-# Realizacion_Hobby CSV
 with open(os.path.join(CSV_DIR, "realizacion_hobby.csv"), "w", newline="", encoding="utf-8") as f:
     writer = csv.DictWriter(f, fieldnames=["id", "estudiante_id", "hobby_id", "recompensa_id", "fecha"])
     writer.writeheader()
@@ -176,14 +271,18 @@ print(f"CSVs creados exitosamente en {CSV_DIR}")
 def escape_sql(val):
     if isinstance(val, str):
         return "'" + val.replace("'", "''") + "'"
-    elif isinstance(val, date):
-        return f"'{val.strftime('%Y-%m-%d')}'"
     return str(val)
 
 with open(SQL_FILE, "w", encoding="utf-8") as f:
     f.write("-- ============================================================\n")
-    f.write("-- CARGA DE 500 DATOS POR TABLA PARA EL CLUSTER COCKROACHDB\n")
+    f.write("-- CARGA DE DATOS PARA EL CLUSTER COCKROACHDB\n")
     f.write("-- Base de datos: hobbies\n")
+    f.write(f"--   ESTUDIANTE: {len(estudiantes)} filas\n")
+    f.write(f"--   HOBBY: {len(hobbies)} filas\n")
+    f.write(f"--   RECOMPENSA: {len(recompensas)} filas\n")
+    f.write(f"--   ESTUDIANTE_HOBBY: {len(estudiante_hobbies)} filas\n")
+    f.write(f"--   REALIZACION_HOBBY: {len(realizaciones)} filas\n")
+    f.write(f"-- Generado por generate_dataset.py (semilla={CONFIG['semilla']})\n")
     f.write("-- ============================================================\n\n")
 
     f.write("-- 1. Limpieza de tablas (preservando o recreando esquema)\n")
@@ -226,55 +325,59 @@ with open(SQL_FILE, "w", encoding="utf-8") as f:
     f.write("    FOREIGN KEY (RECOMPENSA_ID) REFERENCES RECOMPENSA(ID)\n")
     f.write(");\n\n")
 
-    # Inserciones en bloques de 100 para ESTUDIANTE
-    f.write("-- 2. Insercion de 500 ESTUDIANTES\n")
     chunk_size = 100
-    for c in range(0, len(estudiantes), chunk_size):
-        chunk = estudiantes[c:c+chunk_size]
-        vals = ",\n".join(
-            f"({e['id']}, {escape_sql(e['nombre'])}, {e['edad']}, {escape_sql(e['correo_electronico'])})"
-            for e in chunk
-        )
-        f.write(f"INSERT INTO ESTUDIANTE (ID, NOMBRE, EDAD, CORREO_ELECTRONICO) VALUES\n{vals};\n\n")
 
-    # Inserciones en bloques de 100 para HOBBY
-    f.write("-- 3. Insercion de 500 HOBBIES\n")
-    for c in range(0, len(hobbies), chunk_size):
-        chunk = hobbies[c:c+chunk_size]
-        vals = ",\n".join(
-            f"({h['id']}, {escape_sql(h['nombre'])})"
-            for h in chunk
-        )
-        f.write(f"INSERT INTO HOBBY (ID, NOMBRE) VALUES\n{vals};\n\n")
+    def escribir_inserts(tabla, columnas, filas_tabla, formato_fila, comentario):
+        f.write(comentario)
+        for c in range(0, len(filas_tabla), chunk_size):
+            chunk = filas_tabla[c:c+chunk_size]
+            vals = ",\n".join(formato_fila(fila) for fila in chunk)
+            f.write(f"INSERT INTO {tabla} ({', '.join(columnas)}) VALUES\n{vals};\n\n")
 
-    # Inserciones en bloques de 100 para RECOMPENSA
-    f.write("-- 4. Insercion de 500 RECOMPENSAS\n")
-    for c in range(0, len(recompensas), chunk_size):
-        chunk = recompensas[c:c+chunk_size]
-        vals = ",\n".join(
-            f"({r['id']}, {escape_sql(r['nombre'])}, {r['valor']})"
-            for r in chunk
-        )
-        f.write(f"INSERT INTO RECOMPENSA (ID, NOMBRE, VALOR) VALUES\n{vals};\n\n")
+    escribir_inserts(
+        "ESTUDIANTE", ["ID", "NOMBRE", "EDAD", "CORREO_ELECTRONICO"], estudiantes,
+        lambda e: f"({e['id']}, {escape_sql(e['nombre'])}, {e['edad']}, {escape_sql(e['correo_electronico'])})",
+        f"-- 2. Insercion de {len(estudiantes)} ESTUDIANTES\n")
 
-    # Inserciones en bloques de 100 para ESTUDIANTE_HOBBY
-    f.write("-- 5. Insercion de 500 ESTUDIANTE_HOBBY\n")
-    for c in range(0, len(estudiante_hobbies), chunk_size):
-        chunk = estudiante_hobbies[c:c+chunk_size]
-        vals = ",\n".join(
-            f"({eh['estudiante_id']}, {eh['hobby_id']})"
-            for eh in chunk
-        )
-        f.write(f"INSERT INTO ESTUDIANTE_HOBBY (ESTUDIANTE_ID, HOBBY_ID) VALUES\n{vals};\n\n")
+    escribir_inserts(
+        "HOBBY", ["ID", "NOMBRE"], hobbies,
+        lambda h: f"({h['id']}, {escape_sql(h['nombre'])})",
+        f"-- 3. Insercion de {len(hobbies)} HOBBIES\n")
 
-    # Inserciones en bloques de 100 para REALIZACION_HOBBY
-    f.write("-- 6. Insercion de 500 REALIZACION_HOBBY\n")
-    for c in range(0, len(realizaciones), chunk_size):
-        chunk = realizaciones[c:c+chunk_size]
-        vals = ",\n".join(
-            f"({rh['id']}, {rh['estudiante_id']}, {rh['hobby_id']}, {rh['recompensa_id']}, '{rh['fecha']}')"
-            for rh in chunk
-        )
-        f.write(f"INSERT INTO REALIZACION_HOBBY (ID, ESTUDIANTE_ID, HOBBY_ID, RECOMPENSA_ID, FECHA) VALUES\n{vals};\n\n")
+    escribir_inserts(
+        "RECOMPENSA", ["ID", "NOMBRE", "VALOR"], recompensas,
+        lambda r: f"({r['id']}, {escape_sql(r['nombre'])}, {r['valor']})",
+        f"-- 4. Insercion de {len(recompensas)} RECOMPENSAS\n")
+
+    escribir_inserts(
+        "ESTUDIANTE_HOBBY", ["ESTUDIANTE_ID", "HOBBY_ID"], estudiante_hobbies,
+        lambda p: f"({p['estudiante_id']}, {p['hobby_id']})",
+        f"-- 5. Insercion de {len(estudiante_hobbies)} ESTUDIANTE_HOBBY\n")
+
+    escribir_inserts(
+        "REALIZACION_HOBBY", ["ID", "ESTUDIANTE_ID", "HOBBY_ID", "RECOMPENSA_ID", "FECHA"], realizaciones,
+        lambda r: f"({r['id']}, {r['estudiante_id']}, {r['hobby_id']}, {r['recompensa_id']}, '{r['fecha']}')",
+        f"-- 6. Insercion de {len(realizaciones)} REALIZACION_HOBBY\n")
 
 print(f"SQL generado exitosamente en {SQL_FILE}")
+
+# ----------------- RESUMEN DE DISTRIBUCION -----------------
+hobb_por_alumno = Counter(p["estudiante_id"] for p in estudiante_hobbies)
+uso_hobby = Counter(p["hobby_id"] for p in estudiante_hobbies)
+real_por_alumno = Counter(r["estudiante_id"] for r in realizaciones)
+uso_recompensa = Counter(r["recompensa_id"] for r in realizaciones)
+
+print()
+print("=" * 62)
+print("RESUMEN DEL DATASET GENERADO")
+print("=" * 62)
+print(f"ESTUDIANTE        {len(estudiantes):>6} filas")
+print(f"HOBBY             {len(hobbies):>6} filas")
+print(f"RECOMPENSA        {len(recompensas):>6} filas")
+print(f"ESTUDIANTE_HOBBY  {len(estudiante_hobbies):>6} filas | "
+      f"hobbies/estudiante: {min(hobb_por_alumno.values())}-{max(hobb_por_alumno.values())} | "
+      f"uso de cada hobby: {min(uso_hobby.values())}-{max(uso_hobby.values())}")
+print(f"REALIZACION       {len(realizaciones):>6} filas | "
+      f"realizaciones/estudiante: {min(real_por_alumno.values())}-{max(real_por_alumno.values())} | "
+      f"uso de cada recompensa: {min(uso_recompensa.values())}-{max(uso_recompensa.values())}")
+print("=" * 62)
