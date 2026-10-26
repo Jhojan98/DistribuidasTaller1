@@ -1,0 +1,501 @@
+id,nombre,valor
+1,Bono Cafeteria - Nivel 1,23
+2,Descuento Libreria - Nivel 1,36
+3,Puntos Bienestar - Nivel 1,49
+4,Insignia Deportiva - Nivel 1,62
+5,Acceso Gimnasio - Nivel 1,75
+6,Bono Almuerzo - Nivel 1,88
+7,Kit Papeleria - Nivel 1,101
+8,Entrada Cine Cultural - Nivel 1,114
+9,Certificado Excelencia - Nivel 1,127
+10,Bono Tienda Universitaria - Nivel 1,140
+11,Bono Cafeteria - Nivel 2,153
+12,Descuento Libreria - Nivel 2,166
+13,Puntos Bienestar - Nivel 2,179
+14,Insignia Deportiva - Nivel 2,192
+15,Acceso Gimnasio - Nivel 2,205
+16,Bono Almuerzo - Nivel 2,218
+17,Kit Papeleria - Nivel 2,231
+18,Entrada Cine Cultural - Nivel 2,244
+19,Certificado Excelencia - Nivel 2,257
+20,Bono Tienda Universitaria - Nivel 2,270
+21,Bono Cafeteria - Nivel 3,283
+22,Descuento Libreria - Nivel 3,296
+23,Puntos Bienestar - Nivel 3,309
+24,Insignia Deportiva - Nivel 3,322
+25,Acceso Gimnasio - Nivel 3,335
+26,Bono Almuerzo - Nivel 3,348
+27,Kit Papeleria - Nivel 3,361
+28,Entrada Cine Cultural - Nivel 3,374
+29,Certificado Excelencia - Nivel 3,387
+30,Bono Tienda Universitaria - Nivel 3,400
+31,Bono Cafeteria - Nivel 4,413
+32,Descuento Libreria - Nivel 4,426
+33,Puntos Bienestar - Nivel 4,439
+34,Insignia Deportiva - Nivel 4,452
+35,Acceso Gimnasio - Nivel 4,465
+36,Bono Almuerzo - Nivel 4,478
+37,Kit Papeleria - Nivel 4,491
+38,Entrada Cine Cultural - Nivel 4,13
+39,Certificado Excelencia - Nivel 4,26
+40,Bono Tienda Universitaria - Nivel 4,39
+41,Bono Cafeteria - Nivel 5,52
+42,Descuento Libreria - Nivel 5,65
+43,Puntos Bienestar - Nivel 5,78
+44,Insignia Deportiva - Nivel 5,91
+45,Acceso Gimnasio - Nivel 5,104
+46,Bono Almuerzo - Nivel 5,117
+47,Kit Papeleria - Nivel 5,130
+48,Entrada Cine Cultural - Nivel 5,143
+49,Certificado Excelencia - Nivel 5,156
+50,Bono Tienda Universitaria - Nivel 5,169
+51,Bono Cafeteria - Nivel 6,182
+52,Descuento Libreria - Nivel 6,195
+53,Puntos Bienestar - Nivel 6,208
+54,Insignia Deportiva - Nivel 6,221
+55,Acceso Gimnasio - Nivel 6,234
+56,Bono Almuerzo - Nivel 6,247
+57,Kit Papeleria - Nivel 6,260
+58,Entrada Cine Cultural - Nivel 6,273
+59,Certificado Excelencia - Nivel 6,286
+60,Bono Tienda Universitaria - Nivel 6,299
+61,Bono Cafeteria - Nivel 7,312
+62,Descuento Libreria - Nivel 7,325
+63,Puntos Bienestar - Nivel 7,338
+64,Insignia Deportiva - Nivel 7,351
+65,Acceso Gimnasio - Nivel 7,364
+66,Bono Almuerzo - Nivel 7,377
+67,Kit Papeleria - Nivel 7,390
+68,Entrada Cine Cultural - Nivel 7,403
+69,Certificado Excelencia - Nivel 7,416
+70,Bono Tienda Universitaria - Nivel 7,429
+71,Bono Cafeteria - Nivel 8,442
+72,Descuento Libreria - Nivel 8,455
+73,Puntos Bienestar - Nivel 8,468
+74,Insignia Deportiva - Nivel 8,481
+75,Acceso Gimnasio - Nivel 8,494
+76,Bono Almuerzo - Nivel 8,16
+77,Kit Papeleria - Nivel 8,29
+78,Entrada Cine Cultural - Nivel 8,42
+79,Certificado Excelencia - Nivel 8,55
+80,Bono Tienda Universitaria - Nivel 8,68
+81,Bono Cafeteria - Nivel 9,81
+82,Descuento Libreria - Nivel 9,94
+83,Puntos Bienestar - Nivel 9,107
+84,Insignia Deportiva - Nivel 9,120
+85,Acceso Gimnasio - Nivel 9,133
+86,Bono Almuerzo - Nivel 9,146
+87,Kit Papeleria - Nivel 9,159
+88,Entrada Cine Cultural - Nivel 9,172
+89,Certificado Excelencia - Nivel 9,185
+90,Bono Tienda Universitaria - Nivel 9,198
+91,Bono Cafeteria - Nivel 10,211
+92,Descuento Libreria - Nivel 10,224
+93,Puntos Bienestar - Nivel 10,237
+94,Insignia Deportiva - Nivel 10,250
+95,Acceso Gimnasio - Nivel 10,263
+96,Bono Almuerzo - Nivel 10,276
+97,Kit Papeleria - Nivel 10,289
+98,Entrada Cine Cultural - Nivel 10,302
+99,Certificado Excelencia - Nivel 10,315
+100,Bono Tienda Universitaria - Nivel 10,328
+101,Bono Cafeteria - Nivel 11,341
+102,Descuento Libreria - Nivel 11,354
+103,Puntos Bienestar - Nivel 11,367
+104,Insignia Deportiva - Nivel 11,380
+105,Acceso Gimnasio - Nivel 11,393
+106,Bono Almuerzo - Nivel 11,406
+107,Kit Papeleria - Nivel 11,419
+108,Entrada Cine Cultural - Nivel 11,432
+109,Certificado Excelencia - Nivel 11,445
+110,Bono Tienda Universitaria - Nivel 11,458
+111,Bono Cafeteria - Nivel 12,471
+112,Descuento Libreria - Nivel 12,484
+113,Puntos Bienestar - Nivel 12,497
+114,Insignia Deportiva - Nivel 12,19
+115,Acceso Gimnasio - Nivel 12,32
+116,Bono Almuerzo - Nivel 12,45
+117,Kit Papeleria - Nivel 12,58
+118,Entrada Cine Cultural - Nivel 12,71
+119,Certificado Excelencia - Nivel 12,84
+120,Bono Tienda Universitaria - Nivel 12,97
+121,Bono Cafeteria - Nivel 13,110
+122,Descuento Libreria - Nivel 13,123
+123,Puntos Bienestar - Nivel 13,136
+124,Insignia Deportiva - Nivel 13,149
+125,Acceso Gimnasio - Nivel 13,162
+126,Bono Almuerzo - Nivel 13,175
+127,Kit Papeleria - Nivel 13,188
+128,Entrada Cine Cultural - Nivel 13,201
+129,Certificado Excelencia - Nivel 13,214
+130,Bono Tienda Universitaria - Nivel 13,227
+131,Bono Cafeteria - Nivel 14,240
+132,Descuento Libreria - Nivel 14,253
+133,Puntos Bienestar - Nivel 14,266
+134,Insignia Deportiva - Nivel 14,279
+135,Acceso Gimnasio - Nivel 14,292
+136,Bono Almuerzo - Nivel 14,305
+137,Kit Papeleria - Nivel 14,318
+138,Entrada Cine Cultural - Nivel 14,331
+139,Certificado Excelencia - Nivel 14,344
+140,Bono Tienda Universitaria - Nivel 14,357
+141,Bono Cafeteria - Nivel 15,370
+142,Descuento Libreria - Nivel 15,383
+143,Puntos Bienestar - Nivel 15,396
+144,Insignia Deportiva - Nivel 15,409
+145,Acceso Gimnasio - Nivel 15,422
+146,Bono Almuerzo - Nivel 15,435
+147,Kit Papeleria - Nivel 15,448
+148,Entrada Cine Cultural - Nivel 15,461
+149,Certificado Excelencia - Nivel 15,474
+150,Bono Tienda Universitaria - Nivel 15,487
+151,Bono Cafeteria - Nivel 16,500
+152,Descuento Libreria - Nivel 16,22
+153,Puntos Bienestar - Nivel 16,35
+154,Insignia Deportiva - Nivel 16,48
+155,Acceso Gimnasio - Nivel 16,61
+156,Bono Almuerzo - Nivel 16,74
+157,Kit Papeleria - Nivel 16,87
+158,Entrada Cine Cultural - Nivel 16,100
+159,Certificado Excelencia - Nivel 16,113
+160,Bono Tienda Universitaria - Nivel 16,126
+161,Bono Cafeteria - Nivel 17,139
+162,Descuento Libreria - Nivel 17,152
+163,Puntos Bienestar - Nivel 17,165
+164,Insignia Deportiva - Nivel 17,178
+165,Acceso Gimnasio - Nivel 17,191
+166,Bono Almuerzo - Nivel 17,204
+167,Kit Papeleria - Nivel 17,217
+168,Entrada Cine Cultural - Nivel 17,230
+169,Certificado Excelencia - Nivel 17,243
+170,Bono Tienda Universitaria - Nivel 17,256
+171,Bono Cafeteria - Nivel 18,269
+172,Descuento Libreria - Nivel 18,282
+173,Puntos Bienestar - Nivel 18,295
+174,Insignia Deportiva - Nivel 18,308
+175,Acceso Gimnasio - Nivel 18,321
+176,Bono Almuerzo - Nivel 18,334
+177,Kit Papeleria - Nivel 18,347
+178,Entrada Cine Cultural - Nivel 18,360
+179,Certificado Excelencia - Nivel 18,373
+180,Bono Tienda Universitaria - Nivel 18,386
+181,Bono Cafeteria - Nivel 19,399
+182,Descuento Libreria - Nivel 19,412
+183,Puntos Bienestar - Nivel 19,425
+184,Insignia Deportiva - Nivel 19,438
+185,Acceso Gimnasio - Nivel 19,451
+186,Bono Almuerzo - Nivel 19,464
+187,Kit Papeleria - Nivel 19,477
+188,Entrada Cine Cultural - Nivel 19,490
+189,Certificado Excelencia - Nivel 19,12
+190,Bono Tienda Universitaria - Nivel 19,25
+191,Bono Cafeteria - Nivel 20,38
+192,Descuento Libreria - Nivel 20,51
+193,Puntos Bienestar - Nivel 20,64
+194,Insignia Deportiva - Nivel 20,77
+195,Acceso Gimnasio - Nivel 20,90
+196,Bono Almuerzo - Nivel 20,103
+197,Kit Papeleria - Nivel 20,116
+198,Entrada Cine Cultural - Nivel 20,129
+199,Certificado Excelencia - Nivel 20,142
+200,Bono Tienda Universitaria - Nivel 20,155
+201,Bono Cafeteria - Nivel 21,168
+202,Descuento Libreria - Nivel 21,181
+203,Puntos Bienestar - Nivel 21,194
+204,Insignia Deportiva - Nivel 21,207
+205,Acceso Gimnasio - Nivel 21,220
+206,Bono Almuerzo - Nivel 21,233
+207,Kit Papeleria - Nivel 21,246
+208,Entrada Cine Cultural - Nivel 21,259
+209,Certificado Excelencia - Nivel 21,272
+210,Bono Tienda Universitaria - Nivel 21,285
+211,Bono Cafeteria - Nivel 22,298
+212,Descuento Libreria - Nivel 22,311
+213,Puntos Bienestar - Nivel 22,324
+214,Insignia Deportiva - Nivel 22,337
+215,Acceso Gimnasio - Nivel 22,350
+216,Bono Almuerzo - Nivel 22,363
+217,Kit Papeleria - Nivel 22,376
+218,Entrada Cine Cultural - Nivel 22,389
+219,Certificado Excelencia - Nivel 22,402
+220,Bono Tienda Universitaria - Nivel 22,415
+221,Bono Cafeteria - Nivel 23,428
+222,Descuento Libreria - Nivel 23,441
+223,Puntos Bienestar - Nivel 23,454
+224,Insignia Deportiva - Nivel 23,467
+225,Acceso Gimnasio - Nivel 23,480
+226,Bono Almuerzo - Nivel 23,493
+227,Kit Papeleria - Nivel 23,15
+228,Entrada Cine Cultural - Nivel 23,28
+229,Certificado Excelencia - Nivel 23,41
+230,Bono Tienda Universitaria - Nivel 23,54
+231,Bono Cafeteria - Nivel 24,67
+232,Descuento Libreria - Nivel 24,80
+233,Puntos Bienestar - Nivel 24,93
+234,Insignia Deportiva - Nivel 24,106
+235,Acceso Gimnasio - Nivel 24,119
+236,Bono Almuerzo - Nivel 24,132
+237,Kit Papeleria - Nivel 24,145
+238,Entrada Cine Cultural - Nivel 24,158
+239,Certificado Excelencia - Nivel 24,171
+240,Bono Tienda Universitaria - Nivel 24,184
+241,Bono Cafeteria - Nivel 25,197
+242,Descuento Libreria - Nivel 25,210
+243,Puntos Bienestar - Nivel 25,223
+244,Insignia Deportiva - Nivel 25,236
+245,Acceso Gimnasio - Nivel 25,249
+246,Bono Almuerzo - Nivel 25,262
+247,Kit Papeleria - Nivel 25,275
+248,Entrada Cine Cultural - Nivel 25,288
+249,Certificado Excelencia - Nivel 25,301
+250,Bono Tienda Universitaria - Nivel 25,314
+251,Bono Cafeteria - Nivel 26,327
+252,Descuento Libreria - Nivel 26,340
+253,Puntos Bienestar - Nivel 26,353
+254,Insignia Deportiva - Nivel 26,366
+255,Acceso Gimnasio - Nivel 26,379
+256,Bono Almuerzo - Nivel 26,392
+257,Kit Papeleria - Nivel 26,405
+258,Entrada Cine Cultural - Nivel 26,418
+259,Certificado Excelencia - Nivel 26,431
+260,Bono Tienda Universitaria - Nivel 26,444
+261,Bono Cafeteria - Nivel 27,457
+262,Descuento Libreria - Nivel 27,470
+263,Puntos Bienestar - Nivel 27,483
+264,Insignia Deportiva - Nivel 27,496
+265,Acceso Gimnasio - Nivel 27,18
+266,Bono Almuerzo - Nivel 27,31
+267,Kit Papeleria - Nivel 27,44
+268,Entrada Cine Cultural - Nivel 27,57
+269,Certificado Excelencia - Nivel 27,70
+270,Bono Tienda Universitaria - Nivel 27,83
+271,Bono Cafeteria - Nivel 28,96
+272,Descuento Libreria - Nivel 28,109
+273,Puntos Bienestar - Nivel 28,122
+274,Insignia Deportiva - Nivel 28,135
+275,Acceso Gimnasio - Nivel 28,148
+276,Bono Almuerzo - Nivel 28,161
+277,Kit Papeleria - Nivel 28,174
+278,Entrada Cine Cultural - Nivel 28,187
+279,Certificado Excelencia - Nivel 28,200
+280,Bono Tienda Universitaria - Nivel 28,213
+281,Bono Cafeteria - Nivel 29,226
+282,Descuento Libreria - Nivel 29,239
+283,Puntos Bienestar - Nivel 29,252
+284,Insignia Deportiva - Nivel 29,265
+285,Acceso Gimnasio - Nivel 29,278
+286,Bono Almuerzo - Nivel 29,291
+287,Kit Papeleria - Nivel 29,304
+288,Entrada Cine Cultural - Nivel 29,317
+289,Certificado Excelencia - Nivel 29,330
+290,Bono Tienda Universitaria - Nivel 29,343
+291,Bono Cafeteria - Nivel 30,356
+292,Descuento Libreria - Nivel 30,369
+293,Puntos Bienestar - Nivel 30,382
+294,Insignia Deportiva - Nivel 30,395
+295,Acceso Gimnasio - Nivel 30,408
+296,Bono Almuerzo - Nivel 30,421
+297,Kit Papeleria - Nivel 30,434
+298,Entrada Cine Cultural - Nivel 30,447
+299,Certificado Excelencia - Nivel 30,460
+300,Bono Tienda Universitaria - Nivel 30,473
+301,Bono Cafeteria - Nivel 31,486
+302,Descuento Libreria - Nivel 31,499
+303,Puntos Bienestar - Nivel 31,21
+304,Insignia Deportiva - Nivel 31,34
+305,Acceso Gimnasio - Nivel 31,47
+306,Bono Almuerzo - Nivel 31,60
+307,Kit Papeleria - Nivel 31,73
+308,Entrada Cine Cultural - Nivel 31,86
+309,Certificado Excelencia - Nivel 31,99
+310,Bono Tienda Universitaria - Nivel 31,112
+311,Bono Cafeteria - Nivel 32,125
+312,Descuento Libreria - Nivel 32,138
+313,Puntos Bienestar - Nivel 32,151
+314,Insignia Deportiva - Nivel 32,164
+315,Acceso Gimnasio - Nivel 32,177
+316,Bono Almuerzo - Nivel 32,190
+317,Kit Papeleria - Nivel 32,203
+318,Entrada Cine Cultural - Nivel 32,216
+319,Certificado Excelencia - Nivel 32,229
+320,Bono Tienda Universitaria - Nivel 32,242
+321,Bono Cafeteria - Nivel 33,255
+322,Descuento Libreria - Nivel 33,268
+323,Puntos Bienestar - Nivel 33,281
+324,Insignia Deportiva - Nivel 33,294
+325,Acceso Gimnasio - Nivel 33,307
+326,Bono Almuerzo - Nivel 33,320
+327,Kit Papeleria - Nivel 33,333
+328,Entrada Cine Cultural - Nivel 33,346
+329,Certificado Excelencia - Nivel 33,359
+330,Bono Tienda Universitaria - Nivel 33,372
+331,Bono Cafeteria - Nivel 34,385
+332,Descuento Libreria - Nivel 34,398
+333,Puntos Bienestar - Nivel 34,411
+334,Insignia Deportiva - Nivel 34,424
+335,Acceso Gimnasio - Nivel 34,437
+336,Bono Almuerzo - Nivel 34,450
+337,Kit Papeleria - Nivel 34,463
+338,Entrada Cine Cultural - Nivel 34,476
+339,Certificado Excelencia - Nivel 34,489
+340,Bono Tienda Universitaria - Nivel 34,11
+341,Bono Cafeteria - Nivel 35,24
+342,Descuento Libreria - Nivel 35,37
+343,Puntos Bienestar - Nivel 35,50
+344,Insignia Deportiva - Nivel 35,63
+345,Acceso Gimnasio - Nivel 35,76
+346,Bono Almuerzo - Nivel 35,89
+347,Kit Papeleria - Nivel 35,102
+348,Entrada Cine Cultural - Nivel 35,115
+349,Certificado Excelencia - Nivel 35,128
+350,Bono Tienda Universitaria - Nivel 35,141
+351,Bono Cafeteria - Nivel 36,154
+352,Descuento Libreria - Nivel 36,167
+353,Puntos Bienestar - Nivel 36,180
+354,Insignia Deportiva - Nivel 36,193
+355,Acceso Gimnasio - Nivel 36,206
+356,Bono Almuerzo - Nivel 36,219
+357,Kit Papeleria - Nivel 36,232
+358,Entrada Cine Cultural - Nivel 36,245
+359,Certificado Excelencia - Nivel 36,258
+360,Bono Tienda Universitaria - Nivel 36,271
+361,Bono Cafeteria - Nivel 37,284
+362,Descuento Libreria - Nivel 37,297
+363,Puntos Bienestar - Nivel 37,310
+364,Insignia Deportiva - Nivel 37,323
+365,Acceso Gimnasio - Nivel 37,336
+366,Bono Almuerzo - Nivel 37,349
+367,Kit Papeleria - Nivel 37,362
+368,Entrada Cine Cultural - Nivel 37,375
+369,Certificado Excelencia - Nivel 37,388
+370,Bono Tienda Universitaria - Nivel 37,401
+371,Bono Cafeteria - Nivel 38,414
+372,Descuento Libreria - Nivel 38,427
+373,Puntos Bienestar - Nivel 38,440
+374,Insignia Deportiva - Nivel 38,453
+375,Acceso Gimnasio - Nivel 38,466
+376,Bono Almuerzo - Nivel 38,479
+377,Kit Papeleria - Nivel 38,492
+378,Entrada Cine Cultural - Nivel 38,14
+379,Certificado Excelencia - Nivel 38,27
+380,Bono Tienda Universitaria - Nivel 38,40
+381,Bono Cafeteria - Nivel 39,53
+382,Descuento Libreria - Nivel 39,66
+383,Puntos Bienestar - Nivel 39,79
+384,Insignia Deportiva - Nivel 39,92
+385,Acceso Gimnasio - Nivel 39,105
+386,Bono Almuerzo - Nivel 39,118
+387,Kit Papeleria - Nivel 39,131
+388,Entrada Cine Cultural - Nivel 39,144
+389,Certificado Excelencia - Nivel 39,157
+390,Bono Tienda Universitaria - Nivel 39,170
+391,Bono Cafeteria - Nivel 40,183
+392,Descuento Libreria - Nivel 40,196
+393,Puntos Bienestar - Nivel 40,209
+394,Insignia Deportiva - Nivel 40,222
+395,Acceso Gimnasio - Nivel 40,235
+396,Bono Almuerzo - Nivel 40,248
+397,Kit Papeleria - Nivel 40,261
+398,Entrada Cine Cultural - Nivel 40,274
+399,Certificado Excelencia - Nivel 40,287
+400,Bono Tienda Universitaria - Nivel 40,300
+401,Bono Cafeteria - Nivel 41,313
+402,Descuento Libreria - Nivel 41,326
+403,Puntos Bienestar - Nivel 41,339
+404,Insignia Deportiva - Nivel 41,352
+405,Acceso Gimnasio - Nivel 41,365
+406,Bono Almuerzo - Nivel 41,378
+407,Kit Papeleria - Nivel 41,391
+408,Entrada Cine Cultural - Nivel 41,404
+409,Certificado Excelencia - Nivel 41,417
+410,Bono Tienda Universitaria - Nivel 41,430
+411,Bono Cafeteria - Nivel 42,443
+412,Descuento Libreria - Nivel 42,456
+413,Puntos Bienestar - Nivel 42,469
+414,Insignia Deportiva - Nivel 42,482
+415,Acceso Gimnasio - Nivel 42,495
+416,Bono Almuerzo - Nivel 42,17
+417,Kit Papeleria - Nivel 42,30
+418,Entrada Cine Cultural - Nivel 42,43
+419,Certificado Excelencia - Nivel 42,56
+420,Bono Tienda Universitaria - Nivel 42,69
+421,Bono Cafeteria - Nivel 43,82
+422,Descuento Libreria - Nivel 43,95
+423,Puntos Bienestar - Nivel 43,108
+424,Insignia Deportiva - Nivel 43,121
+425,Acceso Gimnasio - Nivel 43,134
+426,Bono Almuerzo - Nivel 43,147
+427,Kit Papeleria - Nivel 43,160
+428,Entrada Cine Cultural - Nivel 43,173
+429,Certificado Excelencia - Nivel 43,186
+430,Bono Tienda Universitaria - Nivel 43,199
+431,Bono Cafeteria - Nivel 44,212
+432,Descuento Libreria - Nivel 44,225
+433,Puntos Bienestar - Nivel 44,238
+434,Insignia Deportiva - Nivel 44,251
+435,Acceso Gimnasio - Nivel 44,264
+436,Bono Almuerzo - Nivel 44,277
+437,Kit Papeleria - Nivel 44,290
+438,Entrada Cine Cultural - Nivel 44,303
+439,Certificado Excelencia - Nivel 44,316
+440,Bono Tienda Universitaria - Nivel 44,329
+441,Bono Cafeteria - Nivel 45,342
+442,Descuento Libreria - Nivel 45,355
+443,Puntos Bienestar - Nivel 45,368
+444,Insignia Deportiva - Nivel 45,381
+445,Acceso Gimnasio - Nivel 45,394
+446,Bono Almuerzo - Nivel 45,407
+447,Kit Papeleria - Nivel 45,420
+448,Entrada Cine Cultural - Nivel 45,433
+449,Certificado Excelencia - Nivel 45,446
+450,Bono Tienda Universitaria - Nivel 45,459
+451,Bono Cafeteria - Nivel 46,472
+452,Descuento Libreria - Nivel 46,485
+453,Puntos Bienestar - Nivel 46,498
+454,Insignia Deportiva - Nivel 46,20
+455,Acceso Gimnasio - Nivel 46,33
+456,Bono Almuerzo - Nivel 46,46
+457,Kit Papeleria - Nivel 46,59
+458,Entrada Cine Cultural - Nivel 46,72
+459,Certificado Excelencia - Nivel 46,85
+460,Bono Tienda Universitaria - Nivel 46,98
+461,Bono Cafeteria - Nivel 47,111
+462,Descuento Libreria - Nivel 47,124
+463,Puntos Bienestar - Nivel 47,137
+464,Insignia Deportiva - Nivel 47,150
+465,Acceso Gimnasio - Nivel 47,163
+466,Bono Almuerzo - Nivel 47,176
+467,Kit Papeleria - Nivel 47,189
+468,Entrada Cine Cultural - Nivel 47,202
+469,Certificado Excelencia - Nivel 47,215
+470,Bono Tienda Universitaria - Nivel 47,228
+471,Bono Cafeteria - Nivel 48,241
+472,Descuento Libreria - Nivel 48,254
+473,Puntos Bienestar - Nivel 48,267
+474,Insignia Deportiva - Nivel 48,280
+475,Acceso Gimnasio - Nivel 48,293
+476,Bono Almuerzo - Nivel 48,306
+477,Kit Papeleria - Nivel 48,319
+478,Entrada Cine Cultural - Nivel 48,332
+479,Certificado Excelencia - Nivel 48,345
+480,Bono Tienda Universitaria - Nivel 48,358
+481,Bono Cafeteria - Nivel 49,371
+482,Descuento Libreria - Nivel 49,384
+483,Puntos Bienestar - Nivel 49,397
+484,Insignia Deportiva - Nivel 49,410
+485,Acceso Gimnasio - Nivel 49,423
+486,Bono Almuerzo - Nivel 49,436
+487,Kit Papeleria - Nivel 49,449
+488,Entrada Cine Cultural - Nivel 49,462
+489,Certificado Excelencia - Nivel 49,475
+490,Bono Tienda Universitaria - Nivel 49,488
+491,Bono Cafeteria - Nivel 50,10
+492,Descuento Libreria - Nivel 50,23
+493,Puntos Bienestar - Nivel 50,36
+494,Insignia Deportiva - Nivel 50,49
+495,Acceso Gimnasio - Nivel 50,62
+496,Bono Almuerzo - Nivel 50,75
+497,Kit Papeleria - Nivel 50,88
+498,Entrada Cine Cultural - Nivel 50,101
+499,Certificado Excelencia - Nivel 50,114
+500,Bono Tienda Universitaria - Nivel 50,127
