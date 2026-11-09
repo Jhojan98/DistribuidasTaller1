@@ -5,35 +5,39 @@ Este documento explica de forma clara, didáctica y práctica qué es una base d
 ---
 
 ## 📌 Tabla de Contenidos
-1. [¿Servía el Docker que tenías? ¿Qué le faltaba?](#1-servía-el-docker-que-tenías-qué-le-faltaba)
-2. [¿Qué es una Base de Datos Distribuida? (Explicación Sencilla)](#2-qué-es-una-base-de-datos-distribuida-explicación-sencilla)
-3. [El Cambio: De PostgreSQL (`Hobbies/`) a CockroachDB (`PruebasDistribuidas/`)](#3-el-cambio-de-postgresql-hobbies-a-cockroachdb-pruebasdistribuidas)
-4. [¿Cómo funciona CockroachDB por dentro? (Conceptos Clave)](#4-cómo-funciona-cockroachdb-por-dentro-conceptos-clave)
-5. [Paso a Paso: Cómo Montar y Usar la Base de Datos](#5-paso-a-paso-cómo-montar-y-usar-la-base-de-datos)
-6. [Dataset Masivo de Prueba (Distribución Equilibrada)](#6-dataset-masivo-de-prueba-distribución-equilibrada)
-7. [Consola Web de Monitoreo (Admin UI)](#7-consola-web-de-monitoreo-admin-ui)
-8. [Experimento en Vivo: Prueba de Tolerancia a Fallos (Matar un Nodo)](#8-experimento-en-vivo-prueba-de-tolerancia-a-fallos-matar-un-nodo)
-9. [Comandos de Referencia Rápida](#9-comandos-de-referencia-rápida)
-10. [Cómo Alterar el Dataset (Parámetros del Generador)](#10-cómo-alterar-el-dataset-parámetros-del-generador)
-11. [Cómo Agregar Columnas a las Tablas en una Base de Datos Distribuida](#11-cómo-agregar-columnas-a-las-tablas-en-una-base-de-datos-distribuida)
-
----
-
-## 1. ¿Servía el Docker que tenías? ¿Qué le faltaba?
-
-**Sí, tu Docker sí servía en un 95%**, pero tenía un detalle crucial que impedía usarlo:
-
-### El Problema:
-En `docker-compose.yml` tenías definidos 3 nodos (`roach1`, `roach2`, `roach3`) que se buscaban entre sí mediante `--join=roach1:26357,roach2:26357,roach3:26357`. 
-
-En CockroachDB, cuando se crea un clúster de múltiples máquinas por primera vez, **los nodos no empiezan a recibir conexiones hasta que reciben una orden de inicialización** (`cockroach init`). 
-Como esa orden nunca se ejecutó, los 3 contenedores se quedaban esperando eternamente en un bucle:
-> `Node will now attempt to join a running cluster, or wait for cockroach init.`
-
-### La Solución que aplicamos:
-1. Agregamos al `docker-compose.yml` un contenedor auxiliar (`cluster-init`) que envía automáticamente la orden de inicialización apenas arrancan los nodos.
-2. Copiamos tu esquema y datos [Hobbies.sql](./Hobbies.sql) a esta carpeta.
-3. Creamos el script automatizado [cargar_datos.sh](./cargar_datos.sh) para que con un solo comando crees la base de datos, las tablas y cargues los registros.
+- [🚀 Guía de Base de Datos Distribuida: CockroachDB \& Hobbies](#-guía-de-base-de-datos-distribuida-cockroachdb--hobbies)
+  - [📌 Tabla de Contenidos](#-tabla-de-contenidos)
+  - [2. ¿Qué es una Base de Datos Distribuida? (Explicación Sencilla)](#2-qué-es-una-base-de-datos-distribuida-explicación-sencilla)
+    - [La Analogía del Banco:](#la-analogía-del-banco)
+  - [3. El Cambio: De PostgreSQL (`Hobbies/`) a CockroachDB (`PruebasDistribuidas/`)](#3-el-cambio-de-postgresql-hobbies-a-cockroachdb-pruebasdistribuidas)
+  - [4. ¿Cómo funciona CockroachDB por dentro? (Conceptos Clave)](#4-cómo-funciona-cockroachdb-por-dentro-conceptos-clave)
+    - [1. Nodos (*Nodes*)](#1-nodos-nodes)
+    - [2. Particionamiento por Rangos (*Ranges / Shards*)](#2-particionamiento-por-rangos-ranges--shards)
+    - [3. Replicación y Algoritmo de Consenso (Raft \& Quórum)](#3-replicación-y-algoritmo-de-consenso-raft--quórum)
+    - [4. Enrutamiento Inteligente](#4-enrutamiento-inteligente)
+  - [5. Paso a Paso: Cómo Montar y Usar la Base de Datos](#5-paso-a-paso-cómo-montar-y-usar-la-base-de-datos)
+    - [Paso 1: Levantar el Clúster](#paso-1-levantar-el-clúster)
+    - [Paso 2: Cargar tu Base de Datos en el Clúster](#paso-2-cargar-tu-base-de-datos-en-el-clúster)
+    - [Paso 3: Probar las Consultas SQL](#paso-3-probar-las-consultas-sql)
+    - [Paso 4: Conectarte desde un Gestor Visual (DBeaver, TablePlus, DataGrip, VS Code)](#paso-4-conectarte-desde-un-gestor-visual-dbeaver-tableplus-datagrip-vs-code)
+  - [6. Dataset Masivo de Prueba (Distribución Equilibrada)](#6-dataset-masivo-de-prueba-distribución-equilibrada)
+    - [Archivos CSV Generados:](#archivos-csv-generados)
+    - [¿Por qué esta distribución es "equilibrada"?](#por-qué-esta-distribución-es-equilibrada)
+    - [💡 Observación Clave: ¿Por qué usamos un `.sql` en vez de cargar directamente los `.csv` con SQL puro en CockroachDB?](#-observación-clave-por-qué-usamos-un-sql-en-vez-de-cargar-directamente-los-csv-con-sql-puro-en-cockroachdb)
+    - [Cómo Cargar los Datos al Clúster:](#cómo-cargar-los-datos-al-clúster)
+  - [7. Consola Web de Monitoreo (Admin UI)](#7-consola-web-de-monitoreo-admin-ui)
+  - [8. Experimento en Vivo: Prueba de Tolerancia a Fallos (Matar un Nodo)](#8-experimento-en-vivo-prueba-de-tolerancia-a-fallos-matar-un-nodo)
+    - [Pasos para replicar el experimento:](#pasos-para-replicar-el-experimento)
+  - [9. Comandos de Referencia Rápida](#9-comandos-de-referencia-rápida)
+  - [10. Cómo Alterar el Dataset (Parámetros del Generador)](#10-cómo-alterar-el-dataset-parámetros-del-generador)
+    - [Ejemplos rápidos](#ejemplos-rápidos)
+    - [Cómo mantiene el equilibrio internamente](#cómo-mantiene-el-equilibrio-internamente)
+  - [11. Cómo Agregar Columnas a las Tablas en una Base de Datos Distribuida](#11-cómo-agregar-columnas-a-las-tablas-en-una-base-de-datos-distribuida)
+    - [El SQL (funciona tal cual en CockroachDB)](#el-sql-funciona-tal-cual-en-cockroachdb)
+    - [¿Qué pasa "detrás de cámaras" en el clúster distribuido?](#qué-pasa-detrás-de-cámaras-en-el-clúster-distribuido)
+    - [Reglas prácticas en CockroachDB](#reglas-prácticas-en-cockroachdb)
+    - [Hacer el cambio permanente en el generador](#hacer-el-cambio-permanente-en-el-generador)
+    - [¿Y si la tabla nueva columna está en las tablas relacionales?](#y-si-la-tabla-nueva-columna-está-en-las-tablas-relacionales)
 
 ---
 
