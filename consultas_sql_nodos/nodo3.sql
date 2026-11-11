@@ -1,0 +1,20 @@
+-- NODO 3
+
+-- Experimento 1
+-- paso 3
+SELECT * FROM ESTUDIANTE WHERE ID = 2000;
+
+DELETE FROM ESTUDIANTE WHERE ID IN (1000, 2000);
+
+
+-- Experimento 2
+-- paso 3
+SELECT PAIS, COUNT(*) AS total
+FROM ESTUDIANTE
+GROUP BY PAIS
+ORDER BY total DESC;
+
+
+-- Experimento 3
+-- paso 3
+SELECT * FROM HOBBY;

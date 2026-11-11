@@ -1,0 +1,81 @@
+
+-- Experimento 4
+-- paso 2
+EXPLAIN ANALYZE
+SELECT
+    e.ID,
+    e.NOMBRE,
+    h.NOMBRE AS HOBBY,
+
+    COUNT(*) AS TOTAL_COMBINACIONES,
+
+    SUM(r1.VALOR * r2.VALOR * r3.VALOR) AS SUMA_PRODUCTOS,
+
+    AVG(
+        ABS(r1.VALOR - r2.VALOR)::FLOAT8
+    ) AS DIFERENCIA_PROMEDIO,
+
+    MAX(
+        POWER(
+            (r1.VALOR * r2.VALOR * r3.VALOR)::FLOAT8,
+            2
+        )
+    ) AS MAXIMO_CALCULADO,
+
+    MIN(
+        SQRT(
+            ABS((r1.VALOR * r2.VALOR * r3.VALOR)::FLOAT8)
+        )
+    ) AS MINIMO_CALCULADO,
+
+    SUM(
+        SIN(r1.VALOR::FLOAT8) *
+        COS(r2.VALOR::FLOAT8) *
+        SIN(r3.VALOR::FLOAT8)
+    ) AS CALCULO_TRIGONOMETRICO,
+
+    SUM(
+        LOG10(
+            (r1.VALOR + r2.VALOR + r3.VALOR)::FLOAT8
+        )
+    ) AS CALCULO_LOGARITMICO,
+
+    AVG(
+        POWER(
+            ABS(r1.VALOR - r2.VALOR + r3.VALOR)::FLOAT8,
+            3
+        )
+    ) AS PROMEDIO_POTENCIAS
+
+FROM ESTUDIANTE e
+
+JOIN REALIZACION_HOBBY rh
+    ON e.ID = rh.ESTUDIANTE_ID
+
+JOIN HOBBY h
+    ON rh.HOBBY_ID = h.ID
+
+JOIN RECOMPENSA r1
+    ON rh.RECOMPENSA_ID = r1.ID
+
+CROSS JOIN REALIZACION_HOBBY rh2
+
+JOIN RECOMPENSA r2
+    ON rh2.RECOMPENSA_ID = r2.ID
+
+CROSS JOIN REALIZACION_HOBBY rh3
+
+JOIN RECOMPENSA r3
+    ON rh3.RECOMPENSA_ID = r3.ID
+
+WHERE
+    rh2.ID <= 500
+    AND rh3.ID <= 10
+
+GROUP BY
+    e.ID,
+    e.NOMBRE,
+    h.NOMBRE
+
+ORDER BY
+    SUMA_PRODUCTOS DESC;
