@@ -8,7 +8,7 @@ Lo que se hace en el taller, en orden:
 2. **Creación del clúster y los nodos:** levantar los 3 nodos con Docker, cargar el dataset, probar consultas por terminal y conectarse desde DBeaver.
 3. **Experimentos y resultados:** replicación de escrituras entre nodos, `ALTER TABLE` sobre una columna nueva, tolerancia a fallos (1 y 2 nodos caídos) y pruebas de rendimiento (1 nodo vs clúster completo), registrando los resultados obtenidos.
 
-El esquema viene de la parte relacional del curso y aquí se ejecuta sobre un motor distribuido. La idea es observar en local lo que un servidor centralizado no muestra: las tablas se dividen en rangos, cada rango tiene tres réplicas y una escritura se confirma cuando la mayoría de los nodos la acepta. Al final se apaga un nodo para comprobar que el clúster sigue atendiendo.
+---
 
 ## Tabla de contenidos
 - [1. Introducción al taller](#1-introducción-al-taller)
@@ -36,15 +36,7 @@ El esquema viene de la parte relacional del curso y aquí se ejecuta sobre un mo
   - [Experimento 4: Rendimiento de un nodo vs clúster completo](#experimento-4-rendimiento-de-un-nodo-vs-clúster-completo)
 - [9. Resultados y conclusiones](#9-resultados-y-conclusiones)
 
-| Archivo | Uso |
-| :--- | :--- |
-| [`docker-compose.yml`](./docker-compose.yml) | Tres nodos de CockroachDB y el contenedor que inicializa el clúster. |
-| [`cargar_datos.sh`](./cargar_datos.sh) | Crea la base `hobbies`, ejecuta el SQL y muestra el conteo final. |
-| [`cargar_datos.sql`](./cargar_datos.sql) | Esquema y datos del dataset grande. |
-| [`Hobbies.sql`](./Hobbies.sql) | Esquema original con 3 estudiantes, 3 hobbies, 3 recompensas y 6 realizaciones. |
-| [`consultas.sql`](./consultas.sql) | 16 consultas de selección, JOIN y agregación. |
-| [`generate_dataset.py`](./generate_dataset.py) | Genera los CSV y el `cargar_datos.sql` con una semilla fija. |
-| [`datos_csv/`](./datos_csv/) | Los cinco CSV que produce el generador. |
+---
 
 ## 1. Introducción al taller
 
@@ -56,14 +48,7 @@ Para eso se configura un clúster de tres nodos (`roach1`, `roach2`, `roach3`) c
 
 ## 2. ¿Qué es una Base de Datos Distribuida?
 
-- Levantar un clúster de tres nodos con Docker Compose y comprobar su estado.
-- Cargar un esquema con llaves foráneas, incluida una llave foránea compuesta.
-- Ejecutar consultas de agregación sobre tablas que el motor reparte entre nodos.
-- Seguir la salud del clúster y el movimiento de rangos en la consola web.
-- Apagar un nodo y verificar que las lecturas y escrituras continúan.
-- Cambiar el esquema en caliente y regenerar el dataset con otros tamaños.
-
-## Modelo de datos
+Para entenderlo, usemos una analogía cotidiana:
 
 ```mermaid
 flowchart TD
@@ -124,7 +109,7 @@ En una base de datos **PostgreSQL** tradicional, toda la información vive en un
 > **¿Por qué el mismo script SQL sirve para ambos motores?**
 > Porque CockroachDB es un motor **NewSQL**: adopta la sintaxis y el protocolo de red de PostgreSQL, pero por debajo almacena y coordina los datos de forma distribuida. Por eso el mismo `CREATE TABLE`, las mismas llaves foráneas (`FOREIGN KEY`), los mismos `JOIN` y las mismas consultas funcionan sin cambios: no hay que reescribir la base de datos ni aprender una sintaxis nueva, solo cambiar el motor sobre el que corre.
 
-## Puesta en marcha
+---
 
 ## 4. Conceptos clave de CockroachDB
 
@@ -195,13 +180,7 @@ docker exec -i roach1 ./cockroach node status --insecure --host=roach1:26257
 
 Deberías ver los 3 nodos con estado `live`.
 
-| Tabla | Filas |
-| :--- | ---: |
-| `ESTUDIANTE` | 500 |
-| `HOBBY` | 250 |
-| `RECOMPENSA` | 250 |
-| `ESTUDIANTE_HOBBY` | 2.042 |
-| `REALIZACION_HOBBY` | 1.951 |
+---
 
 ### Paso 2: Cargar los datos en el clúster
 
@@ -736,12 +715,7 @@ docker rm roach-single
 ```
 
 
-| Bloque | Consultas | Qué muestran |
-| :--- | :--- | :--- |
-| Selección y filtros | 1 a 4 | Listados, comparación de edad, `ILIKE` y orden. |
-| JOIN | 5 a 7 | Hobbies por estudiante y realizaciones con sus tres catálogos. |
-| Agregación | 8 a 12 | Totales por estudiante, hobby, recompensa y fecha. |
-| Ranking y rangos | 13 a 16 | Mayor total, promedio, rango de fechas y `HAVING`. |
+---
 
 ## 9. Resultados y conclusiones
 
