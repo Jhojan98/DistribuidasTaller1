@@ -1,53 +1,58 @@
-# 🚀 Guía de Base de Datos Distribuida: CockroachDB & Hobbies
+# Taller: Base de Datos Distribuida con CockroachDB
 
-Este documento explica de forma clara, didáctica y práctica qué es una base de datos distribuida, cómo funciona el clúster de **CockroachDB** configurado en esta carpeta, por qué tu configuración anterior no terminaba de arrancar y cómo montar tu base de datos SQL de `Hobbies/` sin fricciones.
+Este taller recorre el proceso completo, de inicio a fin, para implementar y probar una base de datos distribuida con **CockroachDB**, Docker y la base de datos de ejemplo *Hobbies*: desde la introducción y los conceptos clave, pasando por la creación del clúster de 3 nodos y la carga de datos, hasta la ejecución de los experimentos (replicación, cambios de esquema, tolerancia a fallos y rendimiento) con sus resultados y conclusiones.
 
----
+Lo que se hace en el taller, en orden:
 
-## 📌 Tabla de Contenidos
-- [🚀 Guía de Base de Datos Distribuida: CockroachDB \& Hobbies](#-guía-de-base-de-datos-distribuida-cockroachdb--hobbies)
-  - [📌 Tabla de Contenidos](#-tabla-de-contenidos)
-  - [2. ¿Qué es una Base de Datos Distribuida? (Explicación Sencilla)](#2-qué-es-una-base-de-datos-distribuida-explicación-sencilla)
-    - [La Analogía del Banco:](#la-analogía-del-banco)
-  - [3. El Cambio: De PostgreSQL (`Hobbies/`) a CockroachDB (`PruebasDistribuidas/`)](#3-el-cambio-de-postgresql-hobbies-a-cockroachdb-pruebasdistribuidas)
-  - [4. ¿Cómo funciona CockroachDB por dentro? (Conceptos Clave)](#4-cómo-funciona-cockroachdb-por-dentro-conceptos-clave)
-    - [1. Nodos (*Nodes*)](#1-nodos-nodes)
-    - [2. Particionamiento por Rangos (*Ranges / Shards*)](#2-particionamiento-por-rangos-ranges--shards)
-    - [3. Replicación y Algoritmo de Consenso (Raft \& Quórum)](#3-replicación-y-algoritmo-de-consenso-raft--quórum)
-    - [4. Enrutamiento Inteligente](#4-enrutamiento-inteligente)
-  - [5. Paso a Paso: Cómo Montar y Usar la Base de Datos](#5-paso-a-paso-cómo-montar-y-usar-la-base-de-datos)
-    - [Paso 1: Levantar el Clúster](#paso-1-levantar-el-clúster)
-    - [Paso 2: Cargar tu Base de Datos en el Clúster](#paso-2-cargar-tu-base-de-datos-en-el-clúster)
-    - [Paso 3: Probar las Consultas SQL](#paso-3-probar-las-consultas-sql)
-    - [Paso 4: Conectarte desde un Gestor Visual (DBeaver, TablePlus, DataGrip, VS Code)](#paso-4-conectarte-desde-un-gestor-visual-dbeaver-tableplus-datagrip-vs-code)
-  - [6. Dataset Masivo de Prueba (Distribución Equilibrada)](#6-dataset-masivo-de-prueba-distribución-equilibrada)
-    - [Archivos CSV Generados:](#archivos-csv-generados)
-    - [¿Por qué esta distribución es "equilibrada"?](#por-qué-esta-distribución-es-equilibrada)
-    - [💡 Observación Clave: ¿Por qué usamos un `.sql` en vez de cargar directamente los `.csv` con SQL puro en CockroachDB?](#-observación-clave-por-qué-usamos-un-sql-en-vez-de-cargar-directamente-los-csv-con-sql-puro-en-cockroachdb)
-    - [Cómo Cargar los Datos al Clúster:](#cómo-cargar-los-datos-al-clúster)
-  - [7. Consola Web de Monitoreo (Admin UI)](#7-consola-web-de-monitoreo-admin-ui)
-  - [8. Experimento en Vivo: Prueba de Tolerancia a Fallos (Matar un Nodo)](#8-experimento-en-vivo-prueba-de-tolerancia-a-fallos-matar-un-nodo)
-    - [Pasos para replicar el experimento:](#pasos-para-replicar-el-experimento)
-  - [9. Comandos de Referencia Rápida](#9-comandos-de-referencia-rápida)
-  - [10. Cómo Alterar el Dataset (Parámetros del Generador)](#10-cómo-alterar-el-dataset-parámetros-del-generador)
-    - [Ejemplos rápidos](#ejemplos-rápidos)
-    - [Cómo mantiene el equilibrio internamente](#cómo-mantiene-el-equilibrio-internamente)
-  - [11. Cómo Agregar Columnas a las Tablas en una Base de Datos Distribuida](#11-cómo-agregar-columnas-a-las-tablas-en-una-base-de-datos-distribuida)
-    - [El SQL (funciona tal cual en CockroachDB)](#el-sql-funciona-tal-cual-en-cockroachdb)
-    - [¿Qué pasa "detrás de cámaras" en el clúster distribuido?](#qué-pasa-detrás-de-cámaras-en-el-clúster-distribuido)
-    - [Reglas prácticas en CockroachDB](#reglas-prácticas-en-cockroachdb)
-    - [Hacer el cambio permanente en el generador](#hacer-el-cambio-permanente-en-el-generador)
-    - [¿Y si la tabla nueva columna está en las tablas relacionales?](#y-si-la-tabla-nueva-columna-está-en-las-tablas-relacionales)
+1. **Introducción y conceptos clave:** qué es una base de datos distribuida, en qué se diferencia PostgreSQL de CockroachDB y cómo funciona CockroachDB por dentro (nodos, rangos, Raft y quórum).
+2. **Creación del clúster y los nodos:** levantar los 3 nodos con Docker, cargar el dataset, probar consultas por terminal y conectarse desde DBeaver.
+3. **Experimentos y resultados:** replicación de escrituras entre nodos, `ALTER TABLE` sobre una columna nueva, tolerancia a fallos (1 y 2 nodos caídos) y pruebas de rendimiento (1 nodo vs clúster completo), registrando los resultados obtenidos.
 
 ---
 
-## 2. ¿Qué es una Base de Datos Distribuida? (Explicación Sencilla)
+## Tabla de contenidos
+- [1. Introducción al taller](#1-introducción-al-taller)
+- [2. ¿Qué es una Base de Datos Distribuida?](#2-qué-es-una-base-de-datos-distribuida)
+  - [La analogía del banco](#la-analogía-del-banco)
+- [3. Diferencias entre PostgreSQL y CockroachDB](#3-diferencias-entre-postgresql-y-cockroachdb)
+- [4. Conceptos clave de CockroachDB](#4-conceptos-clave-de-cockroachdb)
+  - [4.1 Nodos](#41-nodos)
+  - [4.2 Particionamiento por rangos](#42-particionamiento-por-rangos)
+  - [4.3 Replicación y consenso (Raft y quórum)](#43-replicación-y-consenso-raft-y-quórum)
+  - [4.4 Enrutamiento inteligente](#44-enrutamiento-inteligente)
+- [5. Creación del clúster y los nodos (paso a paso)](#5-creación-del-clúster-y-los-nodos-paso-a-paso)
+  - [Cómo se crean los nodos con Docker Compose](#cómo-se-crean-los-nodos-con-docker-compose)
+  - [Paso 1: Levantar el clúster](#paso-1-levantar-el-clúster)
+  - [Paso 2: Cargar los datos en el clúster](#paso-2-cargar-los-datos-en-el-clúster)
+  - [Dataset de prueba](#dataset-de-prueba)
+- [6. Probar las consultas SQL](#6-probar-las-consultas-sql)
+  - [1. Desde terminal](#1-desde-terminal)
+  - [2. O se puede conectar desde DBeaver](#2-o-se-puede-conectar-desde-dbeaver)
+- [7. Consola web de monitoreo (Admin UI)](#7-consola-web-de-monitoreo-admin-ui)
+- [8. Experimentos](#8-experimentos)
+  - [Experimento 1: Replicación de escrituras entre nodos](#experimento-1-replicación-de-escrituras-entre-nodos)
+  - [Experimento 2: ALTER TABLE con la columna PAIS](#experimento-2-alter-table-con-la-columna-pais)
+  - [Experimento 3: Tolerancia a fallos (1 nodo caído y 2 nodos caídos)](#experimento-3-tolerancia-a-fallos-1-nodo-caído-y-2-nodos-caídos)
+  - [Experimento 4: Rendimiento de un nodo vs clúster completo](#experimento-4-rendimiento-de-un-nodo-vs-clúster-completo)
+- [9. Resultados y conclusiones](#9-resultados-y-conclusiones)
+
+---
+
+## 1. Introducción al taller
+
+El objetivo del taller es pasar de una arquitectura tradicional, donde toda la información se almacena en un único servidor, a una arquitectura **distribuida**, donde los datos se gestionan entre varios nodos que trabajan de manera coordinada.
+
+Para eso se configura un clúster de tres nodos (`roach1`, `roach2`, `roach3`) con Docker, se migra la base de datos de ejemplo, se genera un conjunto de datos de prueba, se ejecutan consultas SQL desde DBeaver y se realizan diferentes pruebas para comprobar el funcionamiento del sistema: replicación de datos entre nodos, modificaciones de esquema, tolerancia a fallos y rendimiento.
+
+---
+
+## 2. ¿Qué es una Base de Datos Distribuida?
 
 Para entenderlo, usemos una analogía cotidiana:
 
 ```mermaid
 flowchart TD
-    subgraph Centralizada ["1. Base de Datos Centralizada (PostgreSQL tradicional en Hobbies/)"]
+    subgraph Centralizada ["1. Base de datos centralizada (PostgreSQL)"]
         Srv["Un Solo Servidor Físico / Contenedor"]
         DB[(Almacenamiento Local)]
         Srv --> DB
@@ -55,7 +60,7 @@ flowchart TD
         Client2["Usuario"] --> Srv
     end
 
-    subgraph Distribuida ["2. Base de Datos Distribuida (CockroachDB en PruebasDistribuidas/)"]
+    subgraph Distribuida ["2. Base de datos distribuida (CockroachDB)"]
         N1["Nodo 1 (roach1)"]
         N2["Nodo 2 (roach2)"]
         N3["Nodo 3 (roach3)"]
@@ -67,121 +72,210 @@ flowchart TD
     end
 ```
 
-### La Analogía del Banco:
-* **Base de datos tradicional (Centralizada):**
+### La analogía del banco
+
+* **Base de datos tradicional (centralizada):**
   Es como una sucursal con **un único cajero** que tiene el libro contable físico. Si ese cajero se enferma o la sucursal se queda sin luz, **el banco cierra por completo**. Si llegan 500 clientes al tiempo, la fila se vuelve lenta y la única solución es ponerle un escritorio más grande a ese único cajero (*Escalamiento Vertical*).
 
-* **Base de datos distribuida (Clúster):**
-  Es como tener **3 cajeros en paralelo** (`roach1`, `roach2`, `roach3`). Cada uno tiene una copia sincronizada del libro contable. 
+* **Base de datos distribuida (clúster):**
+  Es como tener **3 cajeros en paralelo** (`roach1`, `roach2`, `roach3`). Cada uno tiene una copia sincronizada del libro contable.
   - Si un cliente le pide $100 al Cajero 1, los cajeros se comunican entre sí para registrar el retiro.
   - **Si el Cajero 1 se desmaya o se apaga, los Cajeros 2 y 3 siguen atendiendo normalmente sin perder un solo centavo de información** (*Tolerancia a fallos y Alta Disponibilidad*).
   - Si llegan miles de clientes, simplemente añades un Cajero 4, 5 o 6 (*Escalamiento Horizontal*).
 
+En resumen, una base de datos distribuida ofrece dos ventajas principales frente a una centralizada:
+
+1. **Tolerancia a fallos:** el sistema sigue funcionando aunque uno (o varios) nodos dejen de estar disponibles.
+2. **Escalamiento horizontal:** se pueden agregar más nodos para repartir la carga, en lugar de depender solo de ampliar la capacidad de un único servidor.
+
 ---
 
-## 3. El Cambio: De PostgreSQL (`Hobbies/`) a CockroachDB (`PruebasDistribuidas/`)
+## 3. Diferencias entre PostgreSQL y CockroachDB
 
-En la carpeta `Hobbies/` tenías un archivo `docker-compose.yml` con **PostgreSQL estándar** (puerto `5433`). 
+En una base de datos **PostgreSQL** tradicional, toda la información vive en un único servidor: es una arquitectura **monolítica** con un punto único de falla. En **CockroachDB**, la información se divide y se replica entre varios nodos independientes que coordinan sus operaciones: es una arquitectura **distribuida (NewSQL)**.
 
-¿Qué cambia al pasar a CockroachDB en `PruebasDistribuidas/`?
-
-| Característica | PostgreSQL (`Hobbies/`) | CockroachDB (`PruebasDistribuidas/`) |
+| Característica | PostgreSQL (centralizada) | CockroachDB (distribuida) |
 | :--- | :--- | :--- |
 | **Arquitectura** | Monolítica (1 nodo centralizado) | Distribuida NewSQL (3 nodos independientes) |
-| **Punto único de falla** | Sí (Si el contenedor cae, se detiene la BD) | No (Puede morir un nodo y el clúster sigue vivo) |
-| **Lenguaje SQL** | SQL estándar | SQL estándar (dialecto PostgreSQL) |
-| **Compatibilidad** | Nativo PostgreSQL | **100% compatible con protocolo y clientes PostgreSQL** |
-| **Puertos de acceso** | Solo 1 puerto (`5433`) | **3 puertos distintos** (Nodo 1: `26257`, Nodo 2: `26258`, Nodo 3: `26259`) |
-| **Consola Web de salud** | Requiere herramientas externas (pgAdmin) | **Consola Web nativa integrada** en `http://localhost:8080` |
+| **Punto único de falla** | Sí (si el contenedor cae, se detiene la BD) | No (puede morir un nodo y el clúster sigue vivo) |
+| **Dónde viven los datos** | En el disco de ese único servidor | Divididos en rangos y replicados en todos los nodos |
+| **Escalamiento** | Vertical (más CPU/RAM al mismo servidor) | Horizontal (se agregan más nodos al clúster) |
+| **Lenguaje SQL** | SQL estándar | SQL estándar (dialecto compatible con PostgreSQL) |
+| **Clientes / protocolo** | Cliente PostgreSQL nativo | **100% compatible con el protocolo y clientes PostgreSQL** |
+| **Puertos de acceso** | 1 solo puerto (`5433` en nuestra configuración original) | **3 puertos distintos** (Nodo 1: `26257`, Nodo 2: `26258`, Nodo 3: `26259`) |
+| **Consola de salud** | Requiere herramientas externas (pgAdmin, etc.) | **Consola web nativa integrada** en `http://localhost:8080` |
 
 > [!NOTE]
-> **¿Por qué funcionó tu script `Hobbies.sql` sin cambiarle nada?**
-> Porque CockroachDB es un motor **NewSQL**: adopta la sintaxis y el protocolo de red de PostgreSQL, pero por debajo almacena y coordina los datos de forma distribuida. No tuviste que aprender una sintaxis rara ni renunciar a tus llaves foráneas (`FOREIGN KEY`) ni a tus `JOIN`.
+> **¿Por qué el mismo script SQL sirve para ambos motores?**
+> Porque CockroachDB es un motor **NewSQL**: adopta la sintaxis y el protocolo de red de PostgreSQL, pero por debajo almacena y coordina los datos de forma distribuida. Por eso el mismo `CREATE TABLE`, las mismas llaves foráneas (`FOREIGN KEY`), los mismos `JOIN` y las mismas consultas funcionan sin cambios: no hay que reescribir la base de datos ni aprender una sintaxis nueva, solo cambiar el motor sobre el que corre.
 
 ---
 
-## 4. ¿Cómo funciona CockroachDB por dentro? (Conceptos Clave)
+## 4. Conceptos clave de CockroachDB
 
-### 1. Nodos (*Nodes*)
+### 4.1 Nodos
+
 Cada contenedor (`roach1`, `roach2`, `roach3`) es un nodo del clúster. Todos los nodos son iguales; **no hay un "nodo maestro" ni un "esclavo"**. Puedes conectarte a cualquiera de ellos para leer o escribir.
 
-### 2. Particionamiento por Rangos (*Ranges / Shards*)
-CockroachDB divide tus tablas (`ESTUDIANTE`, `HOBBY`, `REALIZACION_HOBBY`, etc.) en bloques continuos de datos ordenados por su Llave Primaria llamados **Rangos** (por defecto de ~64 MB). Si tu tabla crece mucho, automáticamente se divide en más rangos y se reparten entre las máquinas.
+### 4.2 Particionamiento por rangos
 
-### 3. Replicación y Algoritmo de Consenso (Raft & Quórum)
-Cada Rango no se guarda en una sola máquina: **se replica 3 veces** (una copia en `roach1`, una en `roach2` y una en `roach3`).
-- Cuando haces un `INSERT`: CockroachDB usa el protocolo **Raft**. Para confirmar que el dato se guardó, necesita que la **mayoría estricta (Quórum)** confirme la escritura.
-- En un clúster de 3 nodos, la mayoría es: $\lfloor 3 / 2 \rfloor + 1 = \mathbf{2 \text{ nodos}}$.
-- Por tanto, basta con que 2 nodos estén vivos para que todo el sistema funcione a la perfección.
+CockroachDB divide tus tablas (`ESTUDIANTE`, `HOBBY`, `REALIZACION_HOBBY`, etc.) en bloques continuos de datos ordenados por su llave primaria llamados **Ranges** (rangos, por defecto de ~64 MB). Si tu tabla crece mucho, automáticamente se divide en más rangos y se reparte entre las máquinas.
 
-### 4. Enrutamiento Inteligente
-Si te conectas a `roach1` y pides un dato que físicamente está almacenado en el disco de `roach3`, tú no tienes que saberlo: `roach1` le pide el dato a `roach3` internamente a través de la red interna y te lo entrega como si estuviera en su propia memoria.
+### 4.3 Replicación y consenso (Raft y quórum)
+
+Cada rango no se guarda en una sola máquina: **se replica 3 veces** (una copia en `roach1`, una en `roach2` y una en `roach3`).
+
+- Cuando haces un `INSERT`, CockroachDB usa el algoritmo **Raft**. Para confirmar que el dato se guardó, necesita que la **mayoría estricta (quórum)** confirme la escritura.
+- En un clúster de 3 nodos, la mayoría es: ⌊3 / 2⌋ + 1 = **2 nodos**.
+- Por tanto, basta con que 2 nodos estén vivos para que todo el sistema siga funcionando a la perfección. Con 1 solo nodo vivo se pierde el quórum y el clúster deja de aceptar lecturas y escrituras (eso es exactamente lo que se observa en el Experimento 3).
+
+### 4.4 Enrutamiento inteligente
+
+Si te conectas a `roach1` y pides un dato que físicamente está almacenado en el disco de `roach3`, tú no tienes que saberlo: `roach1` le pide el dato a `roach3` internamente a través de la red y te lo entrega como si estuviera en su propia memoria. Por eso, desde el punto de vista del cliente, **los 3 nodos parecen una sola base de datos** (así lo veremos en el Experimento 1).
 
 ---
 
-## 5. Paso a Paso: Cómo Montar y Usar la Base de Datos
+## 5. Creación del clúster y los nodos (paso a paso)
 
-### Paso 1: Levantar el Clúster
-Desde esta carpeta (`PruebasDistribuidas/`), ejecuta en tu terminal:
+### Cómo se crean los nodos con Docker Compose
+
+Los nodos no se crean a mano uno por uno: se declaran en el archivo [docker-compose.yml](./docker-compose.yml) y Docker Compose los crea y arranca todos juntos con el comando del Paso 1.
+
+El archivo define 4 servicios:
+
+- **`roach1`, `roach2`, `roach3`:** los 3 nodos de CockroachDB. Los tres usan la misma imagen oficial (`cockroachdb/cockroach`) y arrancan con `cockroach start --insecure`, más una lista `--join` con los 3 nodos (por el puerto `26357`, el que usan para hablar entre sí) para que al iniciarse se reconozcan y formen **un solo clúster**, no 3 bases de datos separadas.
+- **`cluster-init`:** un contenedor auxiliar que ejecuta `cockroach init` una sola vez para crear el clúster; cuando termina, se apaga.
+
+Y tres elementos compartidos por los nodos:
+
+| Elemento del archivo | Qué hace |
+| :--- | :--- |
+| **Puertos** (`ports`) | Publica los puertos de cada nodo en tu máquina con números distintos para que no se pisen: SQL `26257` / `26258` / `26259` y consola web `8080` / `8081` / `8082`. Dentro de la red de Docker, todos escuchan en el mismo puerto (`26257`). |
+| **Volúmenes** (`volumes`) | Un volumen por nodo (`roach1_data`, `roach2_data`, `roach3_data`) para que los datos persistan al reiniciar o detener los contenedores. |
+| **Red** (`networks`) | La red interna `roachnet`, compartida por todos los servicios, donde los nodos se comunican entre sí usando sus nombres (`roach1`, `roach2`, `roach3`). |
+
+> [!NOTE]
+> Cada nodo corre en su propio contenedor y **todos son iguales: no hay un nodo principal**. Al conectarte a cualquiera de ellos, la respuesta la da el clúster completo, que se encarga de repartir y replicar los datos entre los tres.
+
+### Paso 1: Levantar el clúster
+
+Desde la carpeta del repositorio, ejecuta en tu terminal:
 
 ```bash
 docker compose up -d
 ```
 
-Verás que se levantan:
+Con esto Docker Compose crea los contenedores definidos en el archivo y los deja corriendo:
+
 - `roach1`: Nodo 1 (Puerto SQL: `26257`, Web UI: `8080`)
 - `roach2`: Nodo 2 (Puerto SQL: `26258`, Web UI: `8081`)
 - `roach3`: Nodo 3 (Puerto SQL: `26259`, Web UI: `8082`)
-- `roach-init`: Contenedor que inicializa el clúster y luego se apaga pacíficamente.
+- `roach-init`: Contenedor que inicializa el clúster y luego se apaga.
 
 Para comprobar que los 3 nodos están vivos:
+
 ```bash
 docker exec -i roach1 ./cockroach node status --insecure --host=roach1:26257
 ```
 
----
-
-### Paso 2: Cargar tu Base de Datos en el Clúster
-Hemos preparado un único script ejecutable que hace todo el proceso de forma automática:
-
-```bash
-./cargar_datos.sh
-```
-
-El script se encarga de:
-1. Crear la base de datos `hobbies` si no existe.
-2. Cargar las tablas y el dataset desde [cargar_datos.sql](./cargar_datos.sql) (o el esquema inicial ligero con `./cargar_datos.sh Hobbies.sql`).
-3. Mostrar el conteo final de filas de las 5 tablas para validar la carga.
+Deberías ver los 3 nodos con estado `live`.
 
 ---
 
-### Paso 3: Probar las Consultas SQL
-Puedes ejecutar las mismas 16 consultas de [consultas.sql](./consultas.sql) contra el clúster con este comando:
+### Paso 2: Cargar los datos en el clúster
+
+**Opciones de ejecución del `cargar_datos`:**
+
+1. **Carga completa (por defecto):** sin argumentos, el script ejecuta [cargar_datos.sql](./cargar_datos.sql), que crea las 4 tablas y carga el dataset completo (~2.580 registros):
+
+   ```bash
+   ./cargar_datos.sh              # Linux / macOS / WSL / Git Bash
+   .\cargar_datos.ps1             # Windows PowerShell
+   cargar_datos.bat               # Windows CMD
+   ```
+
+El script hace lo siguiente:
+
+1. Crea la base de datos `hobbies` si no existe.
+2. Ejecuta el archivo `.sql` indicado (por defecto `cargar_datos.sql`).
+3. Muestra el conteo de filas de las 4 tablas para validar la carga.
+
+---
+
+### Dataset de prueba
+
+Para poder evaluar el comportamiento, la distribución y el rendimiento del clúster, se generó un dataset de prueba con [generate_dataset.py](./generate_dataset.py), que produce de forma reproducible (semilla fija):
+
+- Los archivos CSV de la carpeta [`datos_csv/`](./datos_csv/).
+- El script [cargar_datos.sql](./cargar_datos.sql), que crea las tablas e inserta los registros en el clúster.
+
+| Tabla | Archivo CSV | Registros | Contenido |
+| :--- | :--- | :--- | :--- |
+| `ESTUDIANTE` | [`estudiante.csv`](./datos_csv/estudiante.csv) | **500** filas | `id`, `nombre`, `edad` (18-32), `codigo` (11 dígitos, único) |
+| `HOBBY` | [`hobby.csv`](./datos_csv/hobby.csv) | **40** filas | `id`, `nombre` — 40 hobbies fijos, sin replicación |
+| `RECOMPENSA` | [`recompensa.csv`](./datos_csv/recompensa.csv) | **40** filas | `id`, `nombre` (una por hobby), `valor` (10 a 500) |
+| `REALIZACION_HOBBY` | [`realizacion_hobby.csv`](./datos_csv/realizacion_hobby.csv) | **2.000** filas | `id`, `estudiante_id`, `hobby_id`, `recompensa_id`, `fecha` (2026) |
+
+Detalles importantes del dataset:
+
+- **Código de estudiante único** de 11 dígitos: `año` (2000-2026) + `semestre` (1 o 2) + `código de carrera` (010 a 090, de 10 en 10) + `consecutivo` (000 a 200). Ejemplos: `20221020098`, `20152050140`, `20201090069`. Nunca se repite (está marcado como `UNIQUE` en la tabla).
+- **Hobbies y recompensas van 1 a 1:** la recompensa `N` es la que corresponde al hobby `N` (ej. hobby "Comer mocos" → recompensa "mocos de diferentes sabores").
+- **Realizaciones equilibradas:** cada estudiante tiene entre 2 y 6 hobbies distintos y entre 2 y 6 realizaciones, cerrando en exactamente **2.000** filas; cada hobby y cada recompensa se usan entre 49 y 51 veces.
+- **Fechas repartidas** entre `2026-01-01` y `2026-10-24`, para que las consultas por rango de fechas (consulta 15 de `consultas.sql`) tengan resultados en cualquier mes.
+
+Para cargar el dataset al clúster se usa el script del **Paso 2** (`./cargar_datos.sh`). Si se desea regenerar los archivos CSV y `cargar_datos.sql`:
 
 ```bash
-docker exec -i roach1 ./cockroach sql --insecure --host=roach1:26257 --database=hobbies < consultas.sql
+python generate_dataset.py
 ```
 
-O abrir una terminal SQL interactiva dentro de cualquier nodo:
+---
+
+## 6. Probar las consultas SQL
+
+### 1. Desde terminal
+
+Se puede abrir una terminal SQL interactiva dentro de cualquier nodo:
 
 ```bash
-# Conectarse interactivamente a roach1:
+# Conectarse interactivamente al Nodo 1:
 docker exec -it roach1 ./cockroach sql --insecure --host=roach1:26257 --database=hobbies
 
-# O conectarse a roach2:
+# O conectarse al Nodo 2:
 docker exec -it roach2 ./cockroach sql --insecure --host=roach2:26257 --database=hobbies
 ```
 
-Dentro de la terminal puedes escribir cualquier SQL:
+Dentro de la terminal puedes escribir cualquier SQL. Por ejemplo, para listar los estudiantes y ver cuánto "dinero" han ganado en recompensas, ordenado de mayor a menor:
+
 ```sql
-SELECT * FROM ESTUDIANTE;
-SELECT e.NOMBRE, h.NOMBRE AS HOBBY FROM ESTUDIANTE e JOIN ESTUDIANTE_HOBBY eh ON eh.ESTUDIANTE_ID = e.ID JOIN HOBBY h ON h.ID = eh.HOBBY_ID;
+SELECT * FROM HOBBY;
+
+SELECT e.NOMBRE, COALESCE(SUM(r.VALOR), 0) AS total_recompensas
+FROM ESTUDIANTE e
+LEFT JOIN REALIZACION_HOBBY rh ON rh.ESTUDIANTE_ID = e.ID
+LEFT JOIN RECOMPENSA r ON r.ID = rh.RECOMPENSA_ID
+GROUP BY e.NOMBRE
+ORDER BY total_recompensas DESC;
 ```
+
+Y para ver los hobbies que más se realizaron, mostrando el hobby y al lado el total de estudiantes que lo practicó (de mayor a menor):
+
+```sql
+SELECT h.NOMBRE AS hobby, COUNT(DISTINCT rh.ESTUDIANTE_ID) AS total_estudiantes
+FROM HOBBY h
+JOIN REALIZACION_HOBBY rh ON rh.HOBBY_ID = h.ID
+GROUP BY h.NOMBRE
+ORDER BY total_estudiantes DESC, hobby;
+```
+
+> [!NOTE]
+> Los puertos `26257`, `26258` y `26259` son los puertos **del host** (los que usa DBeaver desde tu máquina). Dentro de la red de Docker, todos los nodos escuchan en el puerto `26257`, por eso los comandos usan `--host=roach2:26257`, `--host=roach3:26257`, etc.
 
 ---
 
-### Paso 4: Conectarte desde un Gestor Visual (DBeaver, TablePlus, DataGrip, VS Code)
-CockroachDB habla el mismo protocolo que PostgreSQL, por lo que en tu cliente gráfico favorito eliges **PostgreSQL** con estos datos:
+### 2. O se puede conectar desde DBeaver
+
+CockroachDB habla el mismo protocolo que PostgreSQL, por lo que en DBeaver (u otro gestor visual como TablePlus, DataGrip o VS Code) eliges el conector **PostgreSQL** con estos datos:
 
 - **Host:** `localhost` (o `127.0.0.1`)
 - **Port:** `26257` (Nodo 1) o `26258` (Nodo 2) o `26259` (Nodo 3)
@@ -190,303 +284,449 @@ CockroachDB habla el mismo protocolo que PostgreSQL, por lo que en tu cliente gr
 - **Password:** *(dejar vacío, no tiene contraseña)*
 - **SSL:** `Disable` / Desactivado (modo insecure)
 
----
-
-## 6. Dataset Masivo de Prueba (Distribución Equilibrada)
-
-Para evaluar el comportamiento, particionamiento y rendimiento del clúster distribuido, se generó un dataset realista donde **las relaciones de muchos a muchos (N:M) existen en los datos y no solo en el esquema**. Todo sale de [generate_dataset.py](./generate_dataset.py) y es 100% reproducible (semilla fija).
-
-### Archivos CSV Generados:
-Todos los archivos se encuentran disponibles en la carpeta [`datos_csv/`](./datos_csv/):
-
-| Tabla | Archivo CSV | Registros | Descripción de Campos |
-| :--- | :--- | :--- | :--- |
-| `ESTUDIANTE` | [`estudiante.csv`](./datos_csv/estudiante.csv) | **500** filas | `id`, `nombre`, `edad` (18-32), `correo_electronico` |
-| `HOBBY` | [`hobby.csv`](./datos_csv/hobby.csv) | **250** filas | `id`, `nombre` (50 actividades × modalidades) |
-| `RECOMPENSA` | [`recompensa.csv`](./datos_csv/recompensa.csv) | **250** filas | `id`, `nombre` (bonos, descuentos, insignias), `valor` (10 a 500) |
-| `ESTUDIANTE_HOBBY` | [`estudiante_hobby.csv`](./datos_csv/estudiante_hobby.csv) | **2.042** filas | `estudiante_id`, `hobby_id` — 2 a 6 hobbies por estudiante |
-| `REALIZACION_HOBBY` | [`realizacion_hobby.csv`](./datos_csv/realizacion_hobby.csv) | **1.951** filas | `id`, `estudiante_id`, `hobby_id`, `recompensa_id`, `fecha` (2026) — 2 a 6 realizaciones por estudiante |
-
-### ¿Por qué esta distribución es "equilibrada"?
-* **Cada estudiante tiene VARIOS hobbies (entre 2 y 6):** antes la tabla intermedia tenía exactamente 1 fila por estudiante (una relación 1:1 disfrazada de N:M); ahora tiene ~4 en promedio, y el `JOIN` de la consulta 6 devuelve conteos distintos y realistas.
-* **Cada estudiante tiene VARIAS realizaciones (entre 2 y 6):** las consultas de totales de recompensas por estudiante (9, 13 y 16 de `consultas.sql`) devuelven resultados variados y comparables entre sí.
-* **Ningún hobby ni recompensa queda "huérfano":** el generador reparte con la técnica de *water-filling* (siempre elige entre los elementos menos usados hasta ese momento). Resultado: cada hobby lo practican 8-9 estudiantes y cada recompensa se entrega 7-8 veces.
-* **Integridad garantizada por construcción:** cada fila de `REALIZACION_HOBBY` usa un par (`estudiante_id`, `hobby_id`) que existe en `ESTUDIANTE_HOBBY` (la llave foránea compuesta nunca se viola; el script lo verifica con un `assert` antes de escribir nada).
-* **Fechas repartidas uniformemente** entre el 2026-01-01 y el 2026-10-24, para que la consulta 15 (rango de fechas) siempre tenga resultados en cualquier mes.
+> [!TIP]
+> Crea **3 conexiones** (una por nodo, por ejemplo "Nodo 1", "Nodo 2" y "Nodo 3"). Los experimentos de la sección 8 consisten, en gran parte, en ejecutar la misma sentencia en una conexión y verificar el resultado desde otra.
 
 ---
 
-### 💡 Observación Clave: ¿Por qué usamos un `.sql` en vez de cargar directamente los `.csv` con SQL puro en CockroachDB?
+## 7. Consola web de monitoreo (Admin UI)
 
-Es muy natural preguntarse: *¿Por qué no simplemente ejecutar un comando SQL que lea los archivos `.csv` en vez de generar un archivo `.sql`?*
+CockroachDB incluye una consola web para ver la salud del clúster en tiempo real. Es la herramienta que se usa en los experimentos de la sección 8 para observar métricas, estado de los nodos y tiempos de respuesta.
 
-La respuesta se debe a la arquitectura interna y el modelo de licenciamiento de **CockroachDB**:
-
-1. **`IMPORT INTO` es una característica Enterprise (comercial):** En CockroachDB nativo, el comando para ingesta masiva de archivos CSV es `IMPORT INTO`, pero está clasificado como función Enterprise (requiere licencia de pago).
-2. **Almacenamiento remoto:** CockroachDB está diseñado para clústeres en la nube donde los nodos corren en servidores físicos diferentes. Por ello, `IMPORT INTO` no busca un archivo en la ruta local de tu computadora, sino que espera una URL de almacenamiento distribuido en red (como Amazon S3, Google Cloud Storage, Azure Blob o un servidor HTTP interno).
-3. **Contenedores Docker mínimos:** Los contenedores oficiales de CockroachDB solo incluyen el binario del motor distribuido; no traen clientes adicionales para parsear archivos locales externos.
-
-> [!NOTE]
-> **Conclusión técnica:** Para un entorno de desarrollo o académico donde trabajamos con la versión gratuita y 100% contenida en Docker, el archivo [cargar_datos.sql](./cargar_datos.sql) es el estándar universal: se ejecuta a través del protocolo SQL estándar sin requerir licencias de pago, sin dependencias externas y cargando los datos en segundos dentro de Docker.
->
-> *(Nota adicional)*: Como CockroachDB es compatible a nivel de red con PostgreSQL, herramientas cliente externas como `psql` pueden transferir CSVs con el comando cliente `\copy`, pero requieren tener PostgreSQL instalado localmente en el host. Para mantener el proyecto completamente autónomo y funcional únicamente con Docker, centralizamos la carga en el script unificado.
-
----
-
-### Cómo Cargar los Datos al Clúster:
-Solo necesitas ejecutar el único script unificado:
-
-```bash
-./cargar_datos.sh
-```
-
-El script se encarga de:
-1. Verificar que la base de datos `hobbies` exista en el clúster.
-2. Ejecutar [cargar_datos.sql](./cargar_datos.sql) para cargar el dataset completo (borra y recrea las tablas).
-3. Imprimir el conteo de filas de las 5 tablas para validar la carga.
-
-*(Opcional - Si quieres cargar el dataset inicial de 6 filas)*:
-```bash
-./cargar_datos.sh Hobbies.sql
-```
-
-*(Opcional - Si deseas regenerar los archivos CSV y SQL, por ejemplo tras cambiar la configuración de la sección 10)*:
-```bash
-python generate_dataset.py
-```
-
----
-
-## 7. Consola Web de Monitoreo (Admin UI)
-
-CockroachDB incluye una consola web muy completa para ver la salud del clúster en tiempo real:
-
-👉 Abre en tu navegador: **[http://localhost:8080](http://localhost:8080)**
+👉 Abre en tu navegador: **[http://localhost:8080](http://localhost:8080)** (consola del Nodo 1; las de los demás nodos están en `http://localhost:8081` y `http://localhost:8082`).
 
 ¿Qué vas a encontrar allí?
-1. **Cluster Overview:** Verás los 3 nodos con puntos verdes indicando que están sanos (*Healthy*).
-2. **Databases:** Verás la base de datos `hobbies` con sus tablas y tamaño (verás reflejadas las ~500/250/2.000 filas por tabla del dataset).
-3. **Metrics:** Gráficas de CPU, memoria, operaciones de lectura/escritura por segundo y latencia.
-4. **Statements:** Lista de consultas ejecutadas recientemente y su tiempo de respuesta.
+
+1. **Cluster Overview:** los 3 nodos con puntos verdes indicando que están sanos (*Healthy*).
+2. **Databases:** la base de datos `hobbies` con sus tablas y tamaños.
+3. **Metrics:** gráficas de CPU, memoria, operaciones de lectura/escritura por segundo y latencia.
+4. **SQL Activity / Statements:** lista de consultas ejecutadas recientemente con su tiempo de respuesta y percentiles de latencia (clave para el Experimento 4).
 
 ---
 
-## 8. Experimento en Vivo: Prueba de Tolerancia a Fallos (Matar un Nodo)
+## 8. Experimentos
 
-Esta es la mejor prueba práctica para que veas en acción el poder de una base de datos distribuida frente a una tradicional:
+Todos los experimentos se pueden realizar de dos formas: desde **DBeaver** (con una conexión por nodo) o desde la **terminal** con `cockroach sql`. Cada experimento indica ambos caminos y deja un espacio para registrar los resultados obtenidos.
+
+- Conexiones DBeaver: Nodo 1 → `localhost:26257`, Nodo 2 → `localhost:26258`, Nodo 3 → `localhost:26259`.
+- Terminales equivalentes: `docker exec -i roach1 ./cockroach sql --insecure --host=roach1:26257 --database=hobbies -e "..."` (y análogo con `roach2` y `roach3`).
+
+### Experimento 1: Replicación de escrituras entre nodos
+
+**Objetivo:** comprobar que un dato insertado en un nodo es visible desde los demás nodos, y viceversa. Los 3 nodos comparten un único estado de datos.
+
+**Procedimiento en DBeaver:**
+
+1. Conéctate al **Nodo 1** (`26257`) y ejecuta:
+
+   ```sql
+   INSERT INTO ESTUDIANTE (ID, NOMBRE, EDAD, CODIGO)
+   VALUES (1000, 'Prueba Nodo 1', 25, '20261010001');
+
+   SELECT * FROM ESTUDIANTE WHERE ID = 1000;
+   ```
+
+2. Sin desconectarte, abre la conexión al **Nodo 2** (`26258`) y verifica que el registro aparece:
+
+   ```sql
+   SELECT * FROM ESTUDIANTE WHERE ID = 1000;
+   ```
+
+3. Repite en sentido contrario: inserta desde el **Nodo 2** y verifica desde el **Nodo 3** (`26259`) o el **Nodo 1**:
+
+   ```sql
+   -- En Nodo 2 (26258)
+   INSERT INTO ESTUDIANTE (ID, NOMBRE, EDAD, CODIGO)
+   VALUES (2000, 'Prueba Nodo 2', 27, '20261010002');
+
+   -- En Nodo 3 (26259) o Nodo 1 (26257)
+   SELECT * FROM ESTUDIANTE WHERE ID IN (1000, 2000);
+   ```
+
+**Procedimiento por terminal (equivalente):**
+
+```bash
+# Escritura en el Nodo 1 y lectura desde el Nodo 2
+docker exec -i roach1 ./cockroach sql --insecure --host=roach1:26257 --database=hobbies \
+  -e "INSERT INTO ESTUDIANTE (ID, NOMBRE, EDAD, CODIGO) VALUES (9999, 'Prueba Nodo 1', 25, '20261010001');"
+
+docker exec -i roach2 ./cockroach sql --insecure --host=roach2:26257 --database=hobbies \
+  -e "SELECT * FROM ESTUDIANTE WHERE ID = 9999;"
+
+# Escritura en el Nodo 2 y lectura desde el Nodo 3
+docker exec -i roach2 ./cockroach sql --insecure --host=roach2:26257 --database=hobbies \
+  -e "INSERT INTO ESTUDIANTE (ID, NOMBRE, EDAD, CODIGO) VALUES (9998, 'Prueba Nodo 2', 27, '20261010002');"
+
+docker exec -i roach3 ./cockroach sql --insecure --host=roach3:26257 --database=hobbies \
+  -e "SELECT * FROM ESTUDIANTE WHERE ID = 9998;"
+```
+
+**Limpieza** (ejecutar antes del Experimento 2, para que los registros de prueba no aparezcan en los conteos):
+
+```sql
+DELETE FROM ESTUDIANTE WHERE ID IN (1000, 2000);
+```
+---
+
+### Experimento 2: ALTER TABLE con la columna PAIS
+
+**Objetivo:** comprobar cómo se agrega una columna a una tabla dentro de una base de datos distribuida y verificar que el cambio se propaga a todos los nodos.
+
+**Respuesta corta:** el SQL es idéntico al de cualquier PostgreSQL (`ALTER TABLE ... ADD COLUMN`) y **solo se ejecuta una vez, en cualquier nodo**. La parte distribuida la resuelve el clúster solo: la definición de la tabla (su *descriptor*: columnas, tipos, llaves) es un dato más, replicado con el mismo mecanismo de consenso **Raft** que las filas. Además es un cambio *online*: las lecturas y escrituras siguen funcionando mientras se aplica. Si la columna trae `DEFAULT`, el relleno de las filas existentes es un *job* en segundo plano que se puede vigilar con `SHOW JOBS`.
+
+**Procedimiento en DBeaver:**
+
+1. En el **Nodo 1** (`26257`), revisa la estructura actual y agrega la columna:
+
+   ```sql
+   -- Estructura antes del cambio
+   SHOW COLUMNS FROM ESTUDIANTE;
+
+   -- Columna opcional (acepta NULL): lo más simple
+   ALTER TABLE ESTUDIANTE ADD COLUMN PAIS VARCHAR(50);
+
+   -- Verificar el resultado
+   SHOW COLUMNS FROM ESTUDIANTE;
+
+   -- Ver el estado del relleno en segundo plano (backfill)
+   SHOW JOBS;
+   ```
+
+   > [!NOTE]
+   > En tablas pequeñas el *backfill* termina casi de inmediato. Si se quisiera una columna obligatoria, CockroachDB exige un `DEFAULT` para rellenar las filas que ya existen: `ALTER TABLE ESTUDIANTE ADD COLUMN PAIS VARCHAR(50) NOT NULL DEFAULT 'Colombia';`
+
+2. **Verifica desde los demás nodos** (Nodo 2 `26258` y Nodo 3 `26259`) que el cambio ya está visible, sin haberlo ejecutado allí:
+
+   ```sql
+   SHOW COLUMNS FROM ESTUDIANTE;
+   SELECT * FROM ESTUDIANTE WHERE ID = 1;
+   ```
+
+3. Pobla la columna y haz pruebas de consulta con ella (en cualquier nodo):
+
+   ```sql
+   UPDATE ESTUDIANTE SET PAIS = 'Colombia'  WHERE ID <= 250;
+   UPDATE ESTUDIANTE SET PAIS = 'Mexico'    WHERE ID > 250 AND ID <= 400;
+   UPDATE ESTUDIANTE SET PAIS = 'Argentina' WHERE ID > 400;
+
+   -- Consulta 1: conteo por país
+   SELECT PAIS, COUNT(*) AS total
+   FROM ESTUDIANTE
+   GROUP BY PAIS
+   ORDER BY total DESC;
+
+   -- Consulta 2: filtro por país
+   SELECT ID, NOMBRE, PAIS
+   FROM ESTUDIANTE
+   WHERE PAIS = 'Colombia'
+   ORDER BY ID;
+
+   -- Consulta 3: totales de recompensas por país (la columna nueva, unida al resto del esquema)
+   SELECT
+       e.PAIS,
+       COUNT(rh.ID) AS realizaciones,
+       COALESCE(SUM(r.VALOR), 0) AS total_recompensas
+   FROM ESTUDIANTE e
+   LEFT JOIN REALIZACION_HOBBY rh ON rh.ESTUDIANTE_ID = e.ID
+   LEFT JOIN RECOMPENSA r ON r.ID = rh.RECOMPENSA_ID
+   GROUP BY e.PAIS
+   ORDER BY total_recompensas DESC;
+   ```
+
+4. Verifica desde el **Nodo 2** y el **Nodo 3** que las consultas con `PAIS` devuelven exactamente los mismos resultados.
+
+**Limpieza opcional:**
+
+```sql
+-- El espacio en disco no se libera de inmediato (borrado lógico)
+ALTER TABLE ESTUDIANTE DROP COLUMN PAIS;
+```
+
+> [!WARNING]
+> Si vuelves a ejecutar `./cargar_datos.sh`, las tablas se recrean desde `cargar_datos.sql` y la columna `PAIS` desaparece, ya que ese script vuelve a definir el esquema original.
+
+---
+
+### Experimento 3: Tolerancia a fallos (1 nodo caído y 2 nodos caídos)
+
+**Objetivo:** comprobar en la práctica el quórum de Raft (2 de 3 nodos): qué pasa cuando se cae **1 nodo** y qué pasa cuando se caen **2 nodos**.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Tu as Terminal / Usuario
+    actor U as Usuario (DBeaver / Terminal)
     participant N1 as Nodo 1 (roach1)
     participant N2 as Nodo 2 (roach2)
     participant N3 as Nodo 3 (roach3)
 
-    Tu->>N1: Consulta SELECT * FROM ESTUDIANTE
-    N1-->>Tu: Devuelve los 3 estudiantes
+    U->>N1: Consulta SELECT * FROM ESTUDIANTE
+    N1-->>U: Devuelve los datos (3/3 nodos vivos)
     Note over N1: ¡Apagamos Nodo 1! (docker stop roach1)
-    Tu->>N2: Consulta SELECT * FROM ESTUDIANTE (por puerto 26258)
-    Note over N2,N3: Nodos 2 y 3 tienen Quórum (2 de 3)
-    N2-->>Tu: ¡Devuelve los mismos datos sin errores!
+    U->>N2: Misma consulta en Nodo 2 (puerto 26258)
+    Note over N2,N3: Quedan 2 de 3 nodos = quórum
+    N2-->>U: ¡Devuelve los mismos datos sin errores!
     Note over N1: Reiniciamos Nodo 1 (docker start roach1)
     Note over N1,N3: Nodo 1 se reincorpora y sincroniza automáticamente
 ```
 
-### Pasos para replicar el experimento:
+**Caso A: se cae 1 nodo (quedan 2 de 3 = quórum)**
 
-1. **Haz una consulta al Nodo 2 (puerto 26258):**
+1. Consulta base en el Nodo 2 (por terminal o en DBeaver):
+
    ```bash
-   docker exec -i roach2 ./cockroach sql --insecure --host=roach2:26257 --database=hobbies -e "SELECT NOMBRE FROM ESTUDIANTE;"
+   docker exec -i roach2 ./cockroach sql --insecure --host=roach2:26257 --database=hobbies \
+     -e "SELECT COUNT(*) FROM ESTUDIANTE;"
    ```
-   *Resultado:* Verás a Ana, Luis y Sofía.
 
-2. **Simula una catástrofe apagando el Nodo 1:**
+2. Apaga el Nodo 1:
+
    ```bash
    docker stop roach1
    ```
 
-3. **Vuelve a hacer la consulta al Nodo 2 o al Nodo 3:**
-   ```bash
-   docker exec -i roach2 ./cockroach sql --insecure --host=roach2:26257 --database=hobbies -e "SELECT NOMBRE FROM ESTUDIANTE;"
-   ```
-   *Resultado:* **¡La base de datos sigue respondiendo al 100%!** No perdiste datos ni se cayó el servicio.
+3. Vuelve a consultar (lectura) y escribe un registro desde los nodos que siguen vivos:
 
-4. **Revisa la consola web:**
-   Abre [http://localhost:8081](http://localhost:8081) (consola web del Nodo 2). Verás que reporta 1 nodo como *Dead / Suspect*, pero el clúster sigue operativo.
-
-5. **Revive el Nodo 1:**
    ```bash
-   docker start roach1
+   # Lectura desde el Nodo 2
+   docker exec -i roach2 ./cockroach sql --insecure --host=roach2:26257 --database=hobbies \
+     -e "SELECT COUNT(*) FROM ESTUDIANTE;"
+
+   # Escritura desde el Nodo 3
+   docker exec -i roach3 ./cockroach sql --insecure --host=roach3:26257 --database=hobbies \
+     -e "INSERT INTO ESTUDIANTE (ID, NOMBRE, EDAD, CODIGO) VALUES (9997, 'Prueba Sin Nodo 1', 30, '20261010003');"
+
+   # Escritura desde el Nodo 2
+   docker exec -i roach2 ./cockroach sql --insecure --host=roach2:26257 --database=hobbies \
+     -e "SELECT * FROM ESTUDIANTE WHERE ID = 9997;"
    ```
-   El Nodo 1 se reintegrará automáticamente y recibirá las actualizaciones pendientes mediante Raft sin intervención manual.
+
+4. Revisa la consola web del Nodo 2: **[http://localhost:8081](http://localhost:8081)**. Verás 1 nodo reportado como *Dead / Suspect*, pero el clúster sigue operativo. También puedes verlo por terminal:
+
+   ```bash
+   docker exec -i roach2 ./cockroach node status --insecure --host=roach2:26257
+   ```
+
+**Caso B: se caen 2 nodos (queda 1 de 3 = sin quórum)**
+
+1. Con el Nodo 1 ya apagado, apaga también el Nodo 2 (quedaría solo `roach3`):
+
+   ```bash
+   docker stop roach2
+   ```
+
+2. Intenta leer y escribir desde el único nodo vivo:
+
+   ```bash
+   # Lectura desde el Nodo 3
+   docker exec -i roach3 ./cockroach sql --insecure --host=roach3:26257 --database=hobbies \
+     -e "SELECT COUNT(*) FROM ESTUDIANTE;"
+
+   # Escritura desde el Nodo 3
+   docker exec -i roach3 ./cockroach sql --insecure --host=roach3:26257 --database=hobbies \
+     -e "INSERT INTO ESTUDIANTE (ID, NOMBRE, EDAD, CODIGO) VALUES (9996, 'Prueba Sin Quorum', 30, '20261010004');"
+   ```
+
+   Se esperan errores o tiempos de espera (*timeout*): con 1 solo nodo vivo no hay quórum, así que el clúster **no puede confirmar ni lecturas ni escrituras**.
+
+**Recuperación**
+
+1. Enciende los nodos caídos:
+
+   ```bash
+   docker start roach1 roach2
+   ```
+
+2. Verifica que el clúster vuelve a estar completo y que **no se perdió ningún dato** (el registro insertado en el Caso A debe seguir ahí):
+
+   ```bash
+   docker exec -i roach1 ./cockroach node status --insecure --host=roach1:26257
+   ```
+
+   ```sql
+   SELECT * FROM ESTUDIANTE WHERE ID IN (9996, 9997);
+   ```
+
+3. **Limpieza:**
+
+   ```sql
+   DELETE FROM ESTUDIANTE WHERE ID IN (9996, 9997);
+   ```
 
 ---
 
-## 9. Comandos de Referencia Rápida
+### Experimento 4: Rendimiento de un nodo vs clúster completo
 
-| Acción | Comando |
-| :--- | :--- |
-| Iniciar clúster | `docker compose up -d` |
-| Detener clúster | `docker compose stop` |
-| Apagar y borrar contenedores | `docker compose down` |
-| Borrar todo (incluyendo datos del disco) | `docker compose down -v` |
-| Ver estado de los nodos | `docker exec -i roach1 ./cockroach node status --insecure --host=roach1:26257` |
-| Cargar dataset masivo (ver sección 6) | `./cargar_datos.sh` |
-| Cargar dataset inicial alternativo (6 registros) | `./cargar_datos.sh Hobbies.sql` |
-| Regenerar CSVs y `cargar_datos.sql` (ver sección 10) | `python generate_dataset.py` |
-| Entrar a la consola SQL | `docker exec -it roach1 ./cockroach sql --insecure --host=roach1:26257 --database=hobbies` |
-| Ejecutar consultas.sql | `docker exec -i roach1 ./cockroach sql --insecure --host=roach1:26257 --database=hobbies < consultas.sql` |
+**Objetivo:** comparar cuánto tarda el mismo conjunto de consultas cuando se ejecutan contra **un solo nodo** y contra el **clúster completo de 3 nodos**, observando además las métricas en la consola web.
 
----
+Para comparar de forma justa se necesitan dos entornos con el mismo dataset:
 
-## 10. Cómo Alterar el Dataset (Parámetros del Generador)
+- **Escenario A (1 nodo):** una instancia independiente de CockroachDB con un único nodo.
+- **Escenario B (3 nodos):** el clúster de [docker-compose.yml](./docker-compose.yml) (el que se levantó en el Paso 1).
 
-El dataset no está "quemado" en los archivos: sale de [generate_dataset.py](./generate_dataset.py), y todo lo que define su forma vive en el bloque `CONFIG` al inicio del script:
-
-```python
-CONFIG = {
-    "semilla": 42,                        # misma semilla => mismos datos
-    "num_estudiantes": 500,
-    "num_hobbies": 250,
-    "num_recompensas": 250,
-    "hobbies_por_estudiante": (2, 6),     # (mínimo, máximo) por estudiante
-    "realizaciones_por_estudiante": (2, 6),
-    "fecha_inicio": date(2026, 1, 1),
-    "fecha_fin": date(2026, 10, 24),
-    "edad_min": 18, "edad_max": 32,
-    "valor_min": 10, "valor_max": 500,
-}
-```
-
-| Parámetro | Qué controla | Efecto en las tablas |
-| :--- | :--- | :--- |
-| `semilla` | Punto de partida del generador aleatorio | Mismo valor → exactamente los mismos datos; cámbialo para obtener otro "mundo" de datos con los mismos tamaños |
-| `num_estudiantes` | Filas de `ESTUDIANTE` | Con 500 hay ~4.000 correos/nombres únicos combinados |
-| `num_hobbies` | Filas de `HOBBY` | Se generan combinando las listas `actividades` (50) × `modalidades` (10) en rotación |
-| `num_recompensas` | Filas de `RECOMPENSA` | Se generan combinando `tipos_recompensa` (10) × niveles |
-| `hobbies_por_estudiante` | Rango de hobbies por estudiante | Define el total de `ESTUDIANTE_HOBBY` (~4 × estudiantes en promedio) |
-| `realizaciones_por_estudiante` | Rango de realizaciones por estudiante | Define el total de `REALIZACION_HOBBY` (~4 × estudiantes en promedio) |
-| `fecha_inicio` / `fecha_fin` | Rango de fechas de las realizaciones | Reparto uniforme; afecta la consulta 15 (rango de fechas) |
-| `edad_min` / `edad_max` | Rango de edad de los estudiantes | Filas de `ESTUDIANTE` |
-| `valor_min` / `valor_max` | Rango del valor de la recompensa | Filas de `RECOMPENSA` |
-
-### Ejemplos rápidos
-
-```python
-# El doble de estudiantes:
-"num_estudiantes": 1000,
-
-# Más hobbies por estudiante (relación N:M más densa):
-"hobbies_por_estudiante": (3, 10),       # ~3.250 filas en ESTUDIANTE_HOBBY
-
-# Más realizaciones que hobbies (para estresar las consultas de totales):
-"realizaciones_por_estudiante": (6, 14), # ~5.000 filas en REALIZACION_HOBBY
-
-# Otro "mundo" de datos con los mismos tamaños:
-"semilla": 7,
-```
-
-Después de editar, regenera y recarga:
+**Paso 1: preparar el Escenario A (nodo único)**
 
 ```bash
-python generate_dataset.py   # reescribe datos_csv/ y cargar_datos.sql
-./cargar_datos.sh            # recarga el clúster
+# 1. Levantar un nodo independiente (puertos que no chocan con el clúster).
+#    Nota: en la versión actual "start" exige --join; con un solo nodo el
+#    --join se apunta a sí mismo (mismo patrón que docker-compose.yml).
+docker run -d --name roach-single --hostname roach-single -p 26260:26257 -p 8090:8080 cockroachdb/cockroach start --insecure --listen-addr=roach-single:26357 --sql-addr=roach-single:26257 --http-addr=roach-single:8080 --join=roach-single:26357
+
+# 2. Inicializar el nodo (init habla por el puerto RPC, 26357, no por el SQL)
+docker exec -i roach-single ./cockroach init --insecure --host=roach-single:26357
+
+# 3. Crear la base de datos y cargar el mismo dataset del clúster
+docker exec -i roach-single ./cockroach sql --insecure --host=roach-single:26257 -e "CREATE DATABASE IF NOT EXISTS hobbies;"
+docker exec -i roach-single ./cockroach sql --insecure --host=roach-single:26257 --database=hobbies < cargar_datos.sql
 ```
 
-> [!TIP]
-> También puedes editar las listas de catálogo (`nombres`, `apellidos`, `actividades`, `modalidades`, `tipos_recompensa`) para agregar más variedad. Si agregas actividades nuevas y subes `num_hobbies`, las combinaciones rotan solas.
+> [!NOTE]
+> Si un intento anterior falló, puede quedar un contenedor `roach-single` muerto que impide volver a crearlo (error *"name already in use"*) o que responde *"is not running"* en el `init`. Elimínalo antes de reintentar:
 >
-> No te preocupes por romper la integridad: el generador **siempre** crea primero los pares (`estudiante`, `hobby`) y después construye las realizaciones sobre esos pares, y lo verifica con un `assert` antes de escribir un solo archivo.
+> ```bash
+> docker rm -f roach-single
+> ```
 
-### Cómo mantiene el equilibrio internamente
-El script usa dos técnicas de reparto:
+En PowerShell, el comando de carga sería:
 
-* **`repartir_sin_repetidos()`** (para los hobbies de cada estudiante): elige siempre entre los hobbies menos asignados hasta ese momento (*water-filling*), así ninguno queda sin usar y la diferencia entre el más y el menos popular es de apenas 1-2 estudiantes.
-* **`repartidor_ciclico()`** (para las recompensas de cada realización): entrega los ids en pasadas completas barajadas, de modo que cada recompensa se usa ⌊total/250⌋ o ⌈total/250⌉ veces exactas.
+```powershell
+cmd /c "docker exec -i roach-single ./cockroach sql --insecure --host=roach-single:26257 --database=hobbies < cargar_datos.sql"
+```
+
+Con esto quedan los dos escenarios listos, cada uno con su consola web:
+
+- Escenario A (1 nodo): SQL en `localhost:26260`, consola en **[http://localhost:8090](http://localhost:8090)**
+- Escenario B (3 nodos): SQL en `localhost:26257/26258/26259`, consola en **[http://localhost:8080](http://localhost:8080)**
+
+**Paso 2: cómo medir**
+
+Opción 1 — `EXPLAIN ANALYZE` (devuelve el tiempo real de ejecución de la consulta) con la siguiente consulta compleja:
+
+```sql
+EXPLAIN ANALYZE
+SELECT
+    e.ID,
+    e.NOMBRE,
+    h.NOMBRE AS HOBBY,
+
+    COUNT(*) AS TOTAL_COMBINACIONES,
+
+    SUM(r1.VALOR * r2.VALOR * r3.VALOR) AS SUMA_PRODUCTOS,
+
+    AVG(
+        ABS(r1.VALOR - r2.VALOR)::FLOAT8
+    ) AS DIFERENCIA_PROMEDIO,
+
+    MAX(
+        POWER(
+            (r1.VALOR * r2.VALOR * r3.VALOR)::FLOAT8,
+            2
+        )
+    ) AS MAXIMO_CALCULADO,
+
+    MIN(
+        SQRT(
+            ABS((r1.VALOR * r2.VALOR * r3.VALOR)::FLOAT8)
+        )
+    ) AS MINIMO_CALCULADO,
+
+    SUM(
+        SIN(r1.VALOR::FLOAT8) *
+        COS(r2.VALOR::FLOAT8) *
+        SIN(r3.VALOR::FLOAT8)
+    ) AS CALCULO_TRIGONOMETRICO,
+
+    SUM(
+        LOG10(
+            (r1.VALOR + r2.VALOR + r3.VALOR)::FLOAT8
+        )
+    ) AS CALCULO_LOGARITMICO,
+
+    AVG(
+        POWER(
+            ABS(r1.VALOR - r2.VALOR + r3.VALOR)::FLOAT8,
+            3
+        )
+    ) AS PROMEDIO_POTENCIAS
+
+FROM ESTUDIANTE e
+
+JOIN REALIZACION_HOBBY rh
+    ON e.ID = rh.ESTUDIANTE_ID
+
+JOIN HOBBY h
+    ON rh.HOBBY_ID = h.ID
+
+JOIN RECOMPENSA r1
+    ON rh.RECOMPENSA_ID = r1.ID
+
+CROSS JOIN REALIZACION_HOBBY rh2
+
+JOIN RECOMPENSA r2
+    ON rh2.RECOMPENSA_ID = r2.ID
+
+CROSS JOIN REALIZACION_HOBBY rh3
+
+JOIN RECOMPENSA r3
+    ON rh3.RECOMPENSA_ID = r3.ID
+
+WHERE
+    rh2.ID <= 500
+    AND rh3.ID <= 10
+
+GROUP BY
+    e.ID,
+    e.NOMBRE,
+    h.NOMBRE
+
+ORDER BY
+    SUMA_PRODUCTOS DESC;
+```
+
+Opción 2 — `\timing` en la shell interactiva:
+
+```bash
+docker exec -it roach-single ./cockroach sql --insecure --host=roach-single:26257 --database=hobbies
+# o, para el clúster:
+docker exec -it roach1 ./cockroach sql --insecure --host=roach1:26257 --database=hobbies
+```
+
+```sql
+\timing on
+SELECT COUNT(*) FROM REALIZACION_HOBBY rh JOIN RECOMPENSA r ON r.ID = rh.RECOMPENSA_ID;
+```
+
+Opción 2 — consola web (para ver las métricas agregadas):
+
+- En **SQL Activity → Statements** aparecen las consultas ejecutadas con su latencia promedio y sus percentiles (p50/p95/p99).
+- En **Metrics** están las gráficas de latencia y de operaciones de lectura/escritura por segundo.
+- Escenario A: `http://localhost:8090` — Escenario B: `http://localhost:8080`.
+
+**Resultados:**
+
+| Consulta | Descripción | Tiempo 1 nodo (promedio) | Tiempo 3 nodos (promedio) | ¿Cuál fue más rápido? |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | Consulta compleja | 8.5 ms | 7.8 ms | 3 nodos |
+
+**Limpieza del Escenario A:**
+
+```bash
+docker stop roach-single
+docker rm roach-single
+```
+
 
 ---
 
-## 11. Cómo Agregar Columnas a las Tablas en una Base de Datos Distribuida
+## 9. Resultados y conclusiones
 
-Pregunta natural: *si quiero agregarle una columna a una tabla, ¿se hace igual que en PostgreSQL? ¿hay que hacerlo nodo por nodo?*
+**Resultados generales (rellenar):**
 
-**Respuesta corta:** el SQL es idéntico (`ALTER TABLE ... ADD COLUMN`) y **solo se ejecuta una vez, en cualquier nodo**. La parte distribuida la resuelve el clúster solo.
-
-### El SQL (funciona tal cual en CockroachDB)
-
-```sql
--- Columna opcional (acepta NULL): lo más simple
-ALTER TABLE ESTUDIANTE ADD COLUMN TELEFONO VARCHAR(20);
-
--- Columna obligatoria: en CockroachDB, NOT NULL exige DEFAULT,
--- porque hay que rellenar las 500 filas que ya existen
-ALTER TABLE ESTUDIANTE ADD COLUMN SEMESTRE INT NOT NULL DEFAULT 1;
-
--- Verificar el resultado
-SHOW COLUMNS FROM ESTUDIANTE;
-```
-
-### ¿Qué pasa "detrás de cámaras" en el clúster distribuido?
-
-```mermaid
-flowchart LR
-    T["Terminal: ALTER TABLE en roach1"] --> C["Cambio de esquema\n(descriptor de la tabla)"]
-    C -->|Consenso Raft| N1["roach1"]
-    C -->|Consenso Raft| N2["roach2"]
-    C -->|Consenso Raft| N3["roach3"]
-    N1 & N2 & N3 --> J["Job en segundo plano:\nbackfill de la columna nueva"]
-```
-
-1. **El esquema también es dato replicado.** La definición de cada tabla (su *descriptor*: columnas, tipos, llaves) se guarda y replica con el mismo mecanismo de consenso **Raft** que las filas. Por eso ejecutas el `ALTER` una sola vez en un nodo y los tres (`roach1`, `roach2`, `roach3`) llegan al mismo acuerdo. **No hay que repetir el cambio en cada nodo.**
-2. **Es un cambio *online* (sin caída del servicio).** Las lecturas y escrituras sobre la tabla siguen funcionando mientras el cambio se aplica; no se apaga el clúster ni se bloquea la tabla.
-3. **El relleno de las filas existentes es un *job* en segundo plano.** Si la columna trae `DEFAULT`, CockroachDB lanza una tarea de *backfill* que actualiza las filas viejas sin bloquear la operación normal. Puedes vigilarla:
-   ```sql
-   SHOW JOBS;
-   ```
-
-### Reglas prácticas en CockroachDB
-
-| Quieres... | Se hace así | Detalle importante |
+| Experimento | ¿Se cumplió lo esperado? | Resultado / evidencia observada |
 | :--- | :--- | :--- |
-| Agregar columna opcional | `ALTER TABLE t ADD COLUMN col INT;` | Instantáneo; las filas viejas quedan con `NULL` |
-| Agregar columna obligatoria | `ALTER TABLE t ADD COLUMN col INT NOT NULL DEFAULT x;` | El `DEFAULT` es **obligatorio**: define con qué valor se rellenan las filas existentes |
-| Que sea única | Primero `ADD COLUMN`, luego `CREATE UNIQUE INDEX idx ON t(col);` | Mejor en dos pasos separados |
-| Eliminarla | `ALTER TABLE t DROP COLUMN col;` | Borrado lógico: el espacio en disco no se libera de inmediato |
-| Cambiarle el tipo | `ALTER TABLE t ALTER COLUMN col SET DATA TYPE ...;` | Solo conversiones compatibles |
+| 1. Replicación de escrituras entre nodos | Sí / No | SI |
+| 2. `ALTER TABLE` con la columna `PAIS` | Sí / No | SI |
+| 3. Tolerancia a fallos con 1 nodo caído | Sí / No | SI |
+| 3. Tolerancia a fallos con 2 nodos caídos | Sí / No | SI |
+| 4. Rendimiento: 1 nodo vs 3 nodos | Sí / No | SI |
 
-> [!WARNING]
-> En este dataset (cientos/miles de filas) todo lo anterior es casi instantáneo. En tablas de millones de filas el *backfill* puede tardar; ahí conviene agregar la columna con `DEFAULT NULL` primero y rellenarla después en lotes.
-
-### Hacer el cambio permanente en el generador
-
-Un `ALTER TABLE` cambia la tabla **que ya está cargada**, pero si mañana regeneras el dataset con `python generate_dataset.py`, el `cargar_datos.sql` volvería a nacer sin tu columna. Para que la columna nueva quede integrada en el dataset, agrégala en los **4 puntos** de `generate_dataset.py` donde vive la tabla (ejemplo con `ESTUDIANTE` y una columna `SEMESTRE`):
-
-```python
-# 1) La fila: el dict que genera cada estudiante
-estudiantes.append({
-    ...,
-    "semestre": random.randint(1, 10),
-})
-
-# 2) El encabezado del CSV
-fieldnames=["id", "nombre", "edad", "correo_electronico", "semestre"]
-
-# 3) El CREATE TABLE dentro del .sql generado
-f.write("    SEMESTRE INT,\n")
-
-# 4) La lista de columnas del INSERT (y su tupla de valores)
-escribir_inserts(
-    "ESTUDIANTE",
-    ["ID", "NOMBRE", "EDAD", "CORREO_ELECTRONICO", "SEMESTRE"],
-    estudiantes,
-    lambda e: (f"({e['id']}, {escape_sql(e['nombre'])}, {e['edad']}, "
-               f"{escape_sql(e['correo_electronico'])}, {e['semestre']})"),
-    f"-- 2. Insercion de {len(estudiantes)} ESTUDIANTES\n")
-```
-
-Y de nuevo el ciclo: `python generate_dataset.py && ./cargar_datos.sh`. Como `cargar_datos.sql` hace `DROP TABLE ... CASCADE` y recrea todo, la columna queda integrada desde la carga inicial sin ningún `ALTER` manual.
-
-### ¿Y si la tabla nueva columna está en las tablas relacionales?
-El mismo procedimiento sirve para `HOBBY`, `RECOMPENSA`, `ESTUDIANTE_HOBBY` y `REALIZACION_HOBBY`. Solo recuerda que las dos últimas participan en llaves foráneas compuestas: si la columna nueva debe ser llave foránea, créala primero como columna normal (`ADD COLUMN`) y agrega la restricción después en un paso separado (`ALTER TABLE ... ADD CONSTRAINT ... FOREIGN KEY ...`).
-
+**Conclusiones (rellenar):**

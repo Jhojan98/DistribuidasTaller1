@@ -9,7 +9,7 @@ FROM ESTUDIANTE
 ORDER BY ID;
 
 -- 2. Ver estudiantes mayores de 20 anos.
-SELECT ID, NOMBRE, EDAD, CORREO_ELECTRONICO
+SELECT ID, NOMBRE, EDAD, CODIGO
 FROM ESTUDIANTE
 WHERE EDAD > 20
 ORDER BY EDAD DESC;
@@ -25,24 +25,25 @@ SELECT *
 FROM HOBBY
 ORDER BY ID;
 
--- 5. Ver los hobbies de cada estudiante.
+-- 5. Ver los hobbies de cada estudiante (los que ha realizado al menos una vez).
 SELECT
 	e.ID AS estudiante_id,
 	e.NOMBRE AS estudiante,
 	h.ID AS hobby_id,
 	h.NOMBRE AS hobby
 FROM ESTUDIANTE e
-JOIN ESTUDIANTE_HOBBY eh ON eh.ESTUDIANTE_ID = e.ID
-JOIN HOBBY h ON h.ID = eh.HOBBY_ID
+JOIN REALIZACION_HOBBY rh ON rh.ESTUDIANTE_ID = e.ID
+JOIN HOBBY h ON h.ID = rh.HOBBY_ID
+GROUP BY e.ID, e.NOMBRE, h.ID, h.NOMBRE
 ORDER BY e.ID, h.ID;
 
 -- 6. Contar cuantos hobbies tiene cada estudiante.
 SELECT
 	e.ID AS estudiante_id,
 	e.NOMBRE AS estudiante,
-	COUNT(eh.HOBBY_ID) AS cantidad_hobbies
+	COUNT(DISTINCT rh.HOBBY_ID) AS cantidad_hobbies
 FROM ESTUDIANTE e
-LEFT JOIN ESTUDIANTE_HOBBY eh ON eh.ESTUDIANTE_ID = e.ID
+LEFT JOIN REALIZACION_HOBBY rh ON rh.ESTUDIANTE_ID = e.ID
 GROUP BY e.ID, e.NOMBRE
 ORDER BY cantidad_hobbies DESC, e.ID;
 
